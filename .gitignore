@@ -1,0 +1,7 @@
+#Ignore any compilation files
+*.pyc
+/ply/*
+
+#Ignore any PLY auto-generated files
+*.out
+paresetab.py
