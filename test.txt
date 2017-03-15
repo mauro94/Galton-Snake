@@ -1,0 +1,11 @@
+int id1, id2;
+char text;
+
+void func funcion ( ) : {
+  text = 'd';
+}
+
+main : {
+  id1 = id2 + id2;
+  text = 'c';
+}

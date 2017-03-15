@@ -14,8 +14,6 @@ literals = [ ':',';','(',')','{','}','[',']',',','=',
 reserved = {
    'if',
    'else',
-   'int',
-   'float',
    'row',
    'col',
    'cbind',
@@ -414,5 +412,5 @@ def p_SA_VOID_FUNCTION(p):
 yacc.yacc()
 
 #test
-#file = open ("test2.txt", "r");
-#yacc.parse(file.read())
+file = open ("test.txt", "r");
+yacc.parse(file.read())
