@@ -20,8 +20,7 @@ cube = {}
 #Asignar
 cube['bool=bool'] = datatypes['bool']
 cube['int=int'] = datatypes['int']
-#cube['float=int'] = datatypes['float']
-#cube['int=float'] = datatypes['int']
+cube['float=int'] = datatypes['float']
 cube['float=float'] = datatypes['float']
 cube['char=char'] = datatypes['char']
 cube['dataframe=dataframe'] = datatypes['dataframe']
@@ -31,14 +30,14 @@ cube['int+int'] = datatypes['int']
 cube['float+int'] = datatypes['float']
 cube['int+float'] = datatypes['float']
 cube['float+float'] = datatypes['float']
-#cube['char+char'] = datatypes['int']
+cube['char+char'] = datatypes['int']
 
 #Resta
 cube['int-int'] = datatypes['int']
 cube['float-int'] = datatypes['float']
 cube['int-float'] = datatypes['float']
 cube['float-float'] = datatypes['float']
-#cube['char-char'] = datatypes['int']
+cube['char-char'] = datatypes['int']
 
 #Multiplicacion
 cube['int*int'] = datatypes['int']
