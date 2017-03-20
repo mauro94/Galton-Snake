@@ -22,7 +22,6 @@ reserved = {
    'correlateHeaders',
    'correlate',
    'dataframe',
-   'csv',
    'void',
    'func',
    'while',
@@ -51,7 +50,8 @@ tokens = [
     'cte_float', 
     'cte_int',
     'cte_char', 
-    'id'
+    'id',
+    'file'
     ] + list(reserved)
 
 
@@ -79,6 +79,11 @@ def t_cte_char(t):
 def t_cte_int(t):
     r'[0-9]+'
     t.value = int(t.value)
+    return t
+
+def t_file(t):
+    r'[A-Za-z0-9\_\-]+.csv'
+    t.value = reserved.get(t.value, 'file')
     return t
 
 def t_id(t):
@@ -172,11 +177,11 @@ def p_CORRELATION(p):
                    | CORR'''
 
 def p_CREATE_DF(p):
-    '''CREATE_DF : dataframe SA_NEW_DF '(' id SA_CREATE_VAR ',' '[' CREATE_DF_TAGS ']' ',' FILE_INPUT ')' ';' 
-                 | dataframe SA_NEW_DF '(' id SA_CREATE_VAR ',' FILE_INPUT ')' ';' '''
+    '''CREATE_DF : dataframe SA_NEW_DF '(' id SA_CREATE_VAR ',' '[' CREATE_DF_TAGS ']' ',' file ')' ';' 
+                 | dataframe SA_NEW_DF '(' id SA_CREATE_VAR ',' file ')' ';' '''
 
 def p_CREATE_DF_TAGS(p):
-    '''CREATE_DF_TAGS : cte_string ',' 
+    '''CREATE_DF_TAGS : cte_string ',' CREATE_DF_TAGS
                       | cte_string'''
 
 def p_EXP(p):
@@ -201,9 +206,6 @@ def p_FACTOR(p):
               | '+' SA_NEW_SIGN VAR_CTE 
               | '-' SA_NEW_SIGN VAR_CTE 
               | VAR_CTE'''
-
-def p_FILE_INPUT(p):
-    '''FILE_INPUT : cte_string '.' csv'''
 
 def p_FUNCTION(p):
     '''FUNCTION : void SA_VOID_FUNCTION func id SA_NEW_FUNCTION '(' PARAMETERS SA_FUNCTION_PARAMS ')' ':' BLOCK 
