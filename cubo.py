@@ -8,7 +8,7 @@ datatypes = {
   'boolArray':11,
   'int':2,
   'intArray':22,
-  'float':3
+  'float':3,
   'floatArray':33,
   'char':4,
   'string':44,
@@ -40,13 +40,13 @@ cube['int-float'] = datatypes['float']
 cube['float-float'] = datatypes['float']
 #cube['char-char'] = datatypes['int']
 
-#Multiplicación
+#Multiplicacion
 cube['int*int'] = datatypes['int']
 cube['float*int'] = datatypes['float']
 cube['int*float'] = datatypes['float']
 cube['float*float'] = datatypes['float']
 
-#Divisón
+#Divison
 cube['int/int'] = datatypes['int']
 cube['float/int'] = datatypes['float']
 cube['int/float'] = datatypes['float']
@@ -80,7 +80,7 @@ cube['int>=float'] = datatypes['bool']
 cube['float>=float'] = datatypes['bool']
 cube['char>=char'] = datatypes['bool']
 
-#Comparación
+#Comparacion
 cube['bool==bool'] = datatypes['bool']
 cube['int==int'] = datatypes['bool']
 cube['float==int'] = datatypes['bool']
@@ -101,13 +101,13 @@ cube['dataframe!=dataframe'] = datatypes['bool']
 def typeString (type):
   if type == 1:
     return 'bool'
-  else if type == 2: 
+  elif type == 2: 
     return 'int'
-  else if type == 3:
+  elif type == 3:
     return 'float'
-  else if type == 4:
+  elif type == 4:
     return 'char'
-  else if type == 5:
+  elif type == 5:
     return 'dataframe'
 
 def getType(operand1, operand2, operator):
