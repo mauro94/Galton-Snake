@@ -4,4 +4,4 @@
 
 #Ignore any PLY auto-generated files
 *.out
-paresetab.py
+/parsetab.py
