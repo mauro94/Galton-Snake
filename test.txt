@@ -1,11 +1,24 @@
-int id1, id2;
-char text;
+int var1, var2;
+float var3;
+char var4;
+dataframe(var5, file.csv);
 
-void func funcion ( ) : {
-  text = 'd';
+func void func1(): {
+  int var5;
+  
+  var5 = 7;
+  var1 = 5;
+  
+  if(var5 > var1) {
+    var5 = 5;
+  }
+  else {
+    var1 = 7;
+  }
 }
 
-main : {
-  id1 = id2 + id2;
-  text = 'c';
+main: {
+  int var6;
+
+  printData var4;
 }
