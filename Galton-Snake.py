@@ -260,7 +260,8 @@ def p_OPERATION(p):
 
 def p_PARAMETERS(p):
     '''PARAMETERS : TYPE id coma PARAMETERS 
-                  | TYPE id'''
+                  | TYPE id
+                  | '''
     
 
 def p_PRINT_CELL(p):
@@ -449,5 +450,27 @@ def p_SA_VOID_FUNCTION(p):
 yacc.yacc()
 
 #test
-file = open ("test.txt", "r");
-yacc.parse(file.read())
+if __name__ == '__main__':
+  # Check for file
+  if (len(sys.argv) > 1):
+    file = sys.argv[1]
+    # Open file
+    try:
+      f = open(file, 'r')
+      data = f.read()
+      f.close()
+      # Parse the data
+      if (yacc.parse(data, tracking = True) == 'OK'):
+        print(dirProc);
+    except EOFError:
+        print(EOFError)
+  else:
+    print('File missing')
+    while 1:
+        try:
+            s = raw_input('')
+        except EOFError:
+            break
+        if not s:
+            continue
+        yacc.parse(s)
