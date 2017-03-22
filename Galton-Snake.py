@@ -14,6 +14,7 @@ import ply.lex as lex
 reserved = {
    'if' : 'if',
    'else' : 'else',
+   'elseif' : 'elseif',
    'row' : 'row',
    'col' : 'col',
    'cbind' : 'cbind',
@@ -36,7 +37,10 @@ reserved = {
    'float' : 'float',
    'char' : 'char',
    'string' : 'string',
-   'null' : 'null'
+   'bool' : 'bool',
+   'null' : 'null',
+   'true' : 'true',
+   'false' : 'false'
 }
 
 tokens = [
@@ -165,7 +169,15 @@ def p_ACCESS_ROW(p):
     '''ACCESS_ROW : id SA_FIND_ID period col lPar EXP rPar '''
 
 def p_ASSIGNMENT(p):
-    '''ASSIGNMENT : id SA_FIND_ID equal EXP semi_colon '''
+    '''ASSIGNMENT : id SA_FIND_ID equal EXP semi_colon
+                  | id SA_FIND_ID equal CALLFUNC semi_colon
+                  | VAR_ARR equal EXP semi_colon
+                  | VAR_ARR equal CALLFUNC semi_colon
+                  | VAR_ARR equal lSqBr ASSIGNMENT_ARR rSqBr semi_colon '''
+
+def p_ASSIGNMENT_ARR(p):
+    '''ASSIGNMENT_ARR : EXP coma ASSIGNMENT_ARR
+                      | EXP'''
 
 def p_BIND_COLS(p):
     '''BIND_COLS : cbind lPar id SA_FIND_ID coma ACCESS_COL rPar semi_colon '''
@@ -199,7 +211,12 @@ def p_CALLFUNC_PARAMS(p):
 
 def p_CONDITION(p):
     '''CONDITION : if lPar SUPER_EXPRESSION rPar BLOCK 
+                 | if lPar SUPER_EXPRESSION rPar BLOCK elseif CONDITION_ELIF else BLOCK
                  | if lPar SUPER_EXPRESSION rPar BLOCK else BLOCK'''
+
+def p_CONDITION_ELIF(p):
+    '''CONDITION_ELIF : lPar SUPER_EXPRESSION rPar BLOCK elseif CONDITION_ELIF
+                      | lPar SUPER_EXPRESSION rPar BLOCK'''
 
 def p_CORR_HEADERS(p):
     '''CORR_HEADERS : correlateHeaders lPar TABLE_HEADER coma TABLE_HEADER coma VAR_CTE rPar semi_colon '''
@@ -243,8 +260,8 @@ def p_FACTOR(p):
               | VAR_CTE'''
 
 def p_FUNCTION(p):
-    '''FUNCTION : func void SA_VOID_FUNCTION id SA_NEW_FUNCTION lPar PARAMETERS SA_FUNCTION_PARAMS rPar colon BLOCK 
-                | func TYPE id SA_NEW_FUNCTION lPar PARAMETERS SA_FUNCTION_PARAMS rPar colon BLOCK'''
+    '''FUNCTION : func void SA_VOID_FUNCTION id SA_NEW_FUNCTION lPar PARAMETERS rPar colon BLOCK 
+                | func TYPE id SA_NEW_FUNCTION lPar PARAMETERS rPar colon BLOCK'''
     del functionDirectory[current_scope]
 
 def p_INSTANTIATE(p):
@@ -259,8 +276,8 @@ def p_OPERATION(p):
                  | CORRELATION '''
 
 def p_PARAMETERS(p):
-    '''PARAMETERS : TYPE id coma PARAMETERS 
-                  | TYPE id
+    '''PARAMETERS : TYPE id SA_CREATE_PARAMS coma PARAMETERS 
+                  | TYPE id SA_CREATE_PARAMS
                   | '''
     
 
@@ -328,8 +345,12 @@ def p_TYPE(p):
     '''TYPE : int
             | float
             | char
-            | string '''
+            | string 
+            | bool'''
     current_type = p[-1]
+
+def p_VAR_ARR(p):
+    '''VAR_ARR : id lSqBr EXP rSqBr '''
 
 def p_VAR_CTE(p):
     '''VAR_CTE : id SA_FIND_ID
@@ -337,6 +358,9 @@ def p_VAR_CTE(p):
                | cte_int
                | cte_char
                | cte_string
+               | true
+               | false
+               | VAR_ARR
                | null'''
 
 def p_VARS(p):
@@ -344,7 +368,9 @@ def p_VARS(p):
 
 def p_VARS_ID(p):
     '''VARS_ID : id SA_CREATE_VAR coma VARS_ID
-               | id SA_CREATE_VAR '''
+               | id SA_CREATE_VAR 
+               | id SA_CREATE_VAR lSqBr EXP rSqBr coma VARS_ID
+               | id SA_CREATE_VAR lSqBr EXP rSqBr'''
 
 def p_empty(p):
     'empty :'
@@ -359,19 +385,22 @@ def p_error(p):
 def p_SA_FIND_ID(p):
   '''SA_FIND_ID : empty'''
   # Verify ids is in var table (not found error)
-  if  not functionDirectory[current_scope][2].has_key(p[-1]):
+  if not (functionDirectory[current_scope][2].has_key(p[-1]) or functionDirectory['global'][2].has_key(p[-1])) :
     # ERROR
     print("ID does not exist '%s'" % p[-1])
 
 def p_SA_PROGRAM_START(p):
   '''SA_PROGRAM_START : empty'''
   # Generate function directory
+  global current_type, current_scope
   current_type = 'void'
+  current_scope = 'global'
   functionDirectory[current_scope] = [current_type, [], {}]
 
 def p_SA_MAIN_START(p):
   '''SA_MAIN_START : empty'''
   # Add main row to function directory
+  global current_type, current_scope
   current_type = 'void'
   current_scope = 'main'
   functionDirectory[current_scope] = [current_type, [], {}]
@@ -379,11 +408,12 @@ def p_SA_MAIN_START(p):
 def p_SA_NEW_FUNCTION(p):
   '''SA_NEW_FUNCTION : empty'''
   # Add row to function directory with id, type add variable table
+  global current_scope
   current_scope = p[-1]
   functionDirectory[current_scope] = [current_type, [], {}]
 
-def p_SA_FUNCTION_PARAMS(p):
-  '''SA_FUNCTION_PARAMS : empty'''
+def p_SA_CREATE_PARAMS(p):
+  '''SA_CREATE_PARAMS : empty'''
   # Push id to params in function directory (if found error, else push)
   if functionDirectory[current_scope][2].has_key(p[-1]):
     # ERROR
@@ -395,11 +425,13 @@ def p_SA_FUNCTION_PARAMS(p):
 def p_SA_NEW_DF(p):
   '''SA_NEW_DF : empty'''
   # current type = dataframe
+  global current_type
   current_type = 'dataframe'
 
 def p_SA_NEW_SIGN(p):
   '''SA_NEW_SIGN : empty'''
   # Current sign = sign
+  global current_sign
   current_sign = p[-1]
 
 def p_SA_CREATE_VAR(p):
@@ -414,6 +446,7 @@ def p_SA_CREATE_VAR(p):
 def p_SA_VOID_FUNCTION(p):
   '''SA_VOID_FUNCTION : empty'''
   # Define current type to void
+  global current_type
   current_type = 'void'
 
 
