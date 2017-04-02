@@ -1,0 +1,8 @@
+main: {
+  int A, B, C, D, E, F, G;
+
+  if(A*(B+C*D)-E > (B*C-D)/F&&C>D*F)
+  {
+  
+  }
+}

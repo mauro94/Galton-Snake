@@ -111,7 +111,6 @@ def t_cte_string(t):
 
 def t_cte_float(t):
     r'[-+]?[0-9]+\.[0-9]+([Ee][\+-]?[0-9+])?'
-    t.value = float(t.value)
     return t
 
 def t_cte_char(t):
@@ -120,7 +119,6 @@ def t_cte_char(t):
 
 def t_cte_int(t):
     r'[0-9]+'
-    t.value = int(t.value)
     return t
 
 def t_file(t):
@@ -152,19 +150,52 @@ lex.lex()
 import ply.yacc as yacc
 
 # Global Variables
-functionDirectory = {} # {functionName : [functionType, [paramTypeList], #parameters, #localvariables, #quadruplecounter, {varTable}] }
+functionDirectory = {}  # {functionName : {functionType, [paramTypeList], #parameters, #localvariables, #quadruplecounter, {varTable}} }
                         # varTable -> {varID : [type, value]}
-constantTable = {}     # {constant : value}
+constantTable = {}      # {constant : {type, address, value} }
 current_scope = ''      # current scope in the program
 current_type = ''       # current type being used
 current_sign = ''       # current sign being used
 operands = []           # Operands stack
 types = []              # Types stack 
 operators = []          # Operators stack
-quadruples = deque([])  # quadruples queue
+quadruples = []         # quadruples list
 cont = 0                # quadruple counter  
 paramCount = 0          # parameter counter
-localVariableCount = 0  # local variable counter
+varCounter = 0  # local variable counter
+
+# Memory counters
+globalVarCount = {}
+globalVarCount['bool'] = 0
+globalVarCount['int'] = 0
+globalVarCount['float'] = 0
+globalVarCount['char'] = 0
+globalVarCount['string'] = 0
+globalVarCount['dataframe'] = 0
+
+localVarCount = {}
+localVarCount['bool'] = 0
+localVarCount['int'] = 0
+localVarCount['float'] = 0
+localVarCount['char'] = 0
+localVarCount['string'] = 0
+localVarCount['dataframe'] = 0
+
+tempVarCount = {}
+tempVarCount['bool'] = 0
+tempVarCount['int'] = 0
+tempVarCount['float'] = 0
+tempVarCount['char'] = 0
+tempVarCount['string'] = 0
+tempVarCount['dataframe'] = 0
+
+constVarCount = {}
+constVarCount['bool'] = 0
+constVarCount['int'] = 0
+constVarCount['float'] = 0
+constVarCount['char'] = 0
+constVarCount['string'] = 0
+constVarCount['dataframe'] = 0
 
 # Starting grammar
 start = 'PROGRAM'
@@ -198,8 +229,8 @@ def p_BINDINGS(p):
                 | BIND_COLS'''
 
 def p_BLOCK(p):
-    '''BLOCK : lBr BLOCK_INST BLOCK_STM rBr 
-             | lBr BLOCK_INST BLOCK_STM return EXP semi_colon rBr '''
+    '''BLOCK : lBr BLOCK_INST SA_FINAL_FUNC_VALUES BLOCK_STM rBr 
+             | lBr BLOCK_INST SA_FINAL_FUNC_VALUES BLOCK_STM return EXP semi_colon rBr '''
 
 def p_BLOCK_INST(p):
     '''BLOCK_INST : INSTANTIATE BLOCK_INST 
@@ -245,13 +276,13 @@ def p_CREATE_DF_TAGS(p):
                       | cte_string SA_ADD_DF_TAG'''
 
 def p_EXP(p):
-    '''EXP : TERM 
-           | TERM plus SA_EXP_3 EXP 
-           | TERM minus SA_EXP_3 EXP'''
+    '''EXP : TERM SA_EXP_8
+           | TERM SA_EXP_8 plus SA_EXP_3 EXP 
+           | TERM SA_EXP_8 minus SA_EXP_3 EXP'''
 
 def p_EXPRESSION(p):
-    '''EXPRESSION : EXP 
-                  | EXP EXPRESSION_SYM EXP'''
+    '''EXPRESSION : EXP SA_EXP_7
+                  | EXP SA_EXP_7 EXPRESSION_SYM EXPRESSION'''
 
 def p_EXPRESSION_SYM(p):
     '''EXPRESSION_SYM : relop_ls SA_EXP_4
@@ -262,7 +293,7 @@ def p_EXPRESSION_SYM(p):
                       | relop_notequal SA_EXP_4'''
 
 def p_FACTOR(p):
-    '''FACTOR : lPar EXPRESSION rPar 
+    '''FACTOR : lPar SA_FAKE_BOTTOM EXPRESSION SA_FAKE_BOTTOM_REMOVE rPar 
               | plus SA_NEW_SIGN VAR_CTE 
               | minus SA_NEW_SIGN VAR_CTE 
               | VAR_CTE'''
@@ -336,16 +367,16 @@ def p_STATEMENT(p):
 
 def p_SUPER_EXPRESSION(p):
     '''SUPER_EXPRESSION : EXPRESSION SA_EXP_6
-                        | EXPRESSION SA_EXP_6 relop_and SA_EXP_5 EXPRESSION 
-                        | EXPRESSION SA_EXP_6 relop_or SA_EXP_5 EXPRESSION'''
+                        | EXPRESSION SA_EXP_6 relop_and SA_EXP_5 SUPER_EXPRESSION 
+                        | EXPRESSION SA_EXP_6 relop_or SA_EXP_5 SUPER_EXPRESSION'''
 
 def p_TABLE_HEADER(p):
     '''TABLE_HEADER : id SA_FIND_ID money_sign id SA_DF_FIND_HEADER_ID'''
 
 def p_TERM(p):
-    '''TERM : FACTOR
-            | FACTOR times SA_EXP_2 TERM
-            | FACTOR divide SA_EXP_2 TERM'''
+    '''TERM : FACTOR SA_EXP_9
+            | FACTOR SA_EXP_9 times SA_EXP_2 TERM
+            | FACTOR SA_EXP_9 divide SA_EXP_2 TERM'''
 
 def p_TYPE(p):
     '''TYPE : int SA_TYPE
@@ -358,15 +389,15 @@ def p_VAR_ARR(p):
     '''VAR_ARR : id SA_FIND_ID lSqBr EXP rSqBr '''
 
 def p_VAR_CTE(p):
-    '''VAR_CTE : id SA_FIND_ID SA_EXP_1
-               | cte_float
-               | cte_int
-               | cte_char
-               | cte_string
-               | true
-               | false
-               | VAR_ARR
-               | null'''
+    '''VAR_CTE : id SA_FIND_ID SA_EXP_1_ID
+               | cte_int SA_CREATE_CONST SA_EXP_1_CTE
+               | cte_float SA_CREATE_CONST SA_EXP_1_CTE
+               | cte_char SA_CREATE_CONST SA_EXP_1_CTE
+               | cte_string SA_CREATE_CONST SA_EXP_1_CTE
+               | true SA_CREATE_CONST SA_EXP_1_CTE 
+               | false SA_CREATE_CONST SA_EXP_1_CTE
+               | VAR_ARR SA_EXP_1_ID
+               | null SA_CREATE_CONST SA_EXP_1_CTE'''
 
 def p_VARS(p):
     '''VARS : TYPE VARS_ID semi_colon '''
@@ -389,37 +420,240 @@ def p_error(p):
 
 # --------- EXTRA GRAMMARS / SEMANTIC ACTIONS ---------
 
+# File specified in dataframe. 
+# Add file name to current dataframe
+def p_SA_DF_ADD_FILE(p):
+  '''SA_DF_ADD_FILE : empty'''
+  # global variables
+  global functionDirectory
+  # get dataframe id
+  varID = p[-8]
+  # get file name
+  file = p[-1]
+  # verify if current dataframe contains tags
+  if not varID == None:
+    # add file name
+    functionDirectory[current_scope]['varTable'][varID]['file'] = file
+  else:
+    # dataframe no tags, get dataframe id
+    varID = p[-4]
+    # add file name
+    functionDirectory[current_scope]['varTable'][varID]['file'] = file
+
+
+
+# Tag specified in dataframe. 
+# Add tag to current dataframe
+def p_SA_ADD_DF_TAG(p):
+  '''SA_ADD_DF_TAG : empty'''
+  # global variables
+  global functionDirectory
+  # get dataframe id
+  varID = p[-5]
+  # get tag
+  tag = p[-1]
+  # verify if new tag already exists
+  if functionDirectory[current_scope]['varTable'][varID].has_key(tag):
+    # print error message
+    print("Tag already exists '%s'" % tag)
+  else:
+    # add new tag
+    functionDirectory[current_scope]['varTable'][varID][tag] = tag
+
+
+
+  # New constant. 
+# Add new constant to constantTable. If not found ignore.
+def p_SA_CREATE_CONST(p):
+  '''SA_CREATE_CONST : empty'''
+  # global variables
+  global constantTable
+  # get constant 
+  constant = p[-1]
+  # validate if current constant does already exists and create
+  if not constantTable.has_key(str(constant)):
+    # bool
+    if constant == 'true' or constant == 'false':
+      #define type code
+      t = 1
+      # define constant
+      if str(constant) == 'true':
+        cte = True
+      else:
+        cte = False
+    # integer
+    elif isinstance(int(constant), int):
+      # define constant
+      cte = int(constant)
+      #define type code
+      t = 2
+    # float
+    elif isinstance(float(constant), float):
+      # define constant
+      cte = float(constant)
+      #define type code
+      t = 3
+    # char
+    elif isinstance(constant, str) and len(str(constant)) == 3:
+      # define constant
+      cte = str(constant)
+      #define type code
+      t = 4
+    # string
+    else:
+      #define type code
+      t = 5
+      # define constant
+      cte = str(constant)
+    #create constant
+    constantTable[str(constant)] = {'type': t, 'address': constVarCount[getTypeString(t)], 'val': cte}
+    #increase constant variable counter
+    constVarCount[getTypeString(t)] += 1
+
+
+
+# Parameters are declared in function.
+# Add paramaters types to function in function directory and variables to varTable. If not found declare error.
+def p_SA_CREATE_PARAMS(p):
+  '''SA_CREATE_PARAMS : empty'''
+  # global variables
+  global functionDirectory, paramCount, varCounter
+  # get var id
+  varID = p[-1]
+  # search for current function
+  if functionDirectory[current_scope]['varTable'].has_key(varID):
+    # print error message
+    print("Parameter already exists '%s'" % varID)
+  else:
+    # add variable to varTable
+    functionDirectory[current_scope]['varTable'][varID] = {'type': current_type, 'address': localVarCount[current_type]} 
+    # add data type to signature
+    functionDirectory[current_scope]['signature'].append(current_type)
+    #increase global variable counter
+    localVarCount[current_type] += 1
+    # increase parameter counter
+    paramCount += 1
+    # increase local variable counter
+    varCounter += 1
+
+
+
+
+  # New variable is being created. 
+# Add new variable to current varTable. If found declare error.
+def p_SA_CREATE_VAR(p):
+  '''SA_CREATE_VAR : empty'''
+  # global variables
+  global varCounter, localVarCount, globalVarCount
+  # var id
+  varID = p[-1]
+  # validate if current variable does already exists in current varTable and global varTable
+  if functionDirectory[current_scope]['varTable'].has_key(varID) or functionDirectory['global']['varTable'].has_key(varID):
+    # print error message
+    print("ID already exists '%s'" % p[-1])
+  else:
+    # dataframe
+    if current_type == 'dataframe':
+      # create variable PENDING
+      functionDirectory[current_scope]['varTable'][varID] = {'type': getTypeCode(current_type), 'address': 0, 'tags': {}, 'file': None, 'headers': {'name': '', 'col': 0}, 'data': [[]]}
+    # other variable type
+    else:
+      # create variable
+      functionDirectory[current_scope]['varTable'][varID] = {'type': getTypeCode(current_type), 'address': 0}
+
+    # define apropiate address to var
+    if current_scope == 'global':
+      # assign address
+      functionDirectory[current_scope]['varTable'][varID]['address'] = globalVarCount[current_type]
+      #increase global variable counter
+      globalVarCount[current_type] += 1
+    else:
+      # assign address
+      functionDirectory[current_scope]['varTable'][varID]['address'] = localVarCount[current_type]
+      #increase global variable counter
+      localVarCount[current_type] += 1
+    # increase local variable counter
+    varCounter += 1
+
+
+
+# Table header ID is declared. PENDING
+# Verify header id is in current dataframe. If not found declare error.
+def p_SA_DF_FIND_HEADER_ID(p):
+  '''SA_DF_FIND_HEADER_ID : empty'''
+  # dataframe id
+  varID = p[-4]
+  # search for dataframe id and header id in current varTable and in global varTable
+  if not (functionDirectory[current_scope]['varTable'][varID]['headers']
+    [2][p[-3]][2].has_key(p[-1]) or functionDirectory['global'][2][p[-3]][2].has_key(p[-1])) :
+    # print error message
+    print("ID does not exist '%s'" % p[-1])
+
+
+# Function ended. 
+# Clear function varTable
+def p_SA_END_FUNCTION(p):
+  '''SA_END_FUNCTION : empty'''
+  # global variables
+  global functionDirectory
+  # clear function varTable
+  functionDirectory[current_scope]['varTable'].clear()
+
+
+
+# Program ended. 
+# Clear function dictionary
+def p_SA_END_PROGRAM(p):
+  '''SA_END_PROGRAM : empty'''
+  # global variables
+  global functionDirectory
+  print quadruples
+
+  # clear function dictionary
+  functionDirectory.clear() 
+
+
+
+# New function is declared.
+# Add new function to function directory with id, type add varTable. If not found declare error.
+def p_SA_FINAL_FUNC_VALUES(p):
+  '''SA_FINAL_FUNC_VALUES : empty'''
+  # global variables
+  global functionDirectory, varCounter
+  # define parameter count for function
+  functionDirectory[current_scope]['parameterCount'] = paramCount
+  # define local variable count for function and reset counter
+  functionDirectory[current_scope]['localVariableCount'] = varCounter
+  varCounter = 0
+  # define current quadruple for function
+  functionDirectory[current_scope]['quadCounter'] = cont
+
+
+
 # ID is declared.
 # Verify ids is in var table. If not found declare error.
 def p_SA_FIND_ID(p):
   '''SA_FIND_ID : empty'''
+  # get id
+  varID = p[-1]
   # search for id in current varTable and in global varTable
-  if not (varTable(functionDirectory, current_scope).has_key(p[-1]) or varTable(functionDirectory, 'global').has_key(p[-1])):
+  if not (functionDirectory[current_scope]['varTable'].has_key(varID) or functionDirectory['global']['varTable'].has_key(varID)):
     # print error message
-    print("ID does not exist '%s'" % p[-1])
+    print("ID does not exist '%s'" % varID)
+
 
 
 # A function is being called.
 # Verify ids is in function directory. If not found declare error.
 def p_SA_FIND_FUNC_ID(p):
   '''SA_FIND_FUNC_ID : empty'''
+  # get function id
+  funcID = p[-1]
   # search for function id in function directory
-  if not p[-1] in functionDirectory.keys() :
+  if not funcID in functionDirectory.keys() :
     # print error message
-    print("Function ID does not exist '%s'" % p[-1])
+    print("Function ID does not exist '%s'" % funcID)
 
-
-# A new porgram is created.
-# Create function directory
-def p_SA_PROGRAM_START(p):
-  '''SA_PROGRAM_START : empty'''
-  # global variables
-  global current_type, current_scope
-  # define current_type and current_scope
-  current_type = 'void'
-  current_scope = 'global'
-  # create global function in function directory
-  newFunction(functionDirectory, current_scope, current_type)
 
 
 # Main function is declared.
@@ -432,7 +666,19 @@ def p_SA_MAIN_START(p):
   current_type = 'void'
   current_scope = 'main'
   # create main function in function directory
-  newFunction(functionDirectory, current_scope, current_type)
+  functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
+
+
+
+# New dataframe is being created.
+# Define current type as dataframe
+def p_SA_NEW_DF(p):
+  '''SA_NEW_DF : empty'''
+  # global variables
+  global current_type
+  # define current_type
+  current_type = 'dataframe'
+
 
 
 # New function is declared.
@@ -446,65 +692,11 @@ def p_SA_NEW_FUNCTION(p):
   # verify if function id already exists
   if functionDirectory.has_key(current_scope):
     # print error message
-    print("Function ID already exists '%s'" % p[-1])
+    print("Function ID already exists '%s'" % current_scope)
   else:
     # create new function in function directory
-    newFunction(functionDirectory, current_scope, current_type)
+    functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
 
-
-# Parameters are declared in function.
-# Add paramaters types to function in function directory and variables to varTable. If not found declare error.
-def p_SA_CREATE_PARAMS(p):
-  '''SA_CREATE_PARAMS : empty'''
-  # global variables
-  global paramCount
-  # search for current function
-  if varTable(functionDirectory, current_scope).has_key(p[-1]):
-    # print error message
-    print("Parameter already exists '%s'" % p[-1])
-  else:
-    # add variable to varTable
-    varTable(functionDirectory, current_scope)[p[-1]] = [current_type]
-    # add data type to signature
-    funcSignature(functionDirectory, current_scope).append(current_type)
-    # increase parameter counter
-    paramCount += 1
-
-
-# New dataframe is being created.
-# Define current type as dataframe
-def p_SA_NEW_DF(p):
-  '''SA_NEW_DF : empty'''
-  # global variables
-  global current_type
-  # define current_type
-  current_type = 'dataframe'
-
-
-# Tag specified in dataframe. 
-# Add tag to current dataframe
-def p_SA_ADD_DF_TAG(p):
-  '''SA_ADD_DF_TAG : empty'''
-  # verify if new tag already exists
-  if dataframeTags(functionDirectory, current_scope, p).has_key(p[-1]):
-    # print error message
-    print("Tag already exists '%s'" % p[-1])
-  else:
-    # add new tag
-    dataframeTags(functionDirectory, current_scope, p)[p[-1]] = None
-
-
-# File specified in dataframe. 
-# Add file name to current dataframe
-def p_SA_DF_ADD_FILE(p):
-  '''SA_DF_ADD_FILE : empty'''
-  # verify if current dataframe contains tags
-  if not p[-8] == None:
-    # add file name
-    varTable(functionDirectory, current_scope)[p[-8]].append(p[-1])
-  else:
-    # add file name
-    varTable(functionDirectory, current_scope)[p[-4]].append(p[-1])
 
 
 # Sign defined for variable. 
@@ -517,50 +709,19 @@ def p_SA_NEW_SIGN(p):
   current_sign = p[-1]
 
 
-# New variable is being created. 
-# Add new variable to current varTable. If not found declare error.
-def p_SA_CREATE_VAR(p):
-  '''SA_CREATE_VAR : empty'''
-  # global variables
-  global localVariableCount
-  # validate if current variable does already exists in current varTable and global varTable
-  if varTable(functionDirectory, current_scope).has_key(p[-1]) or varTable(functionDirectory, 'global').has_key(p[-1]):
-    # print error message
-    print("ID already exists '%s'" % p[-1])
-  else:
-    #dataframe
-    if current_type == 'dataframe':
-      # create variable
-      varTable(functionDirectory, current_scope)[p[-1]] = [current_type, {}, {}]
-    #other variable type
-    else:
-      # create variable
-      varTable(functionDirectory, current_scope)[p[-1]] = [current_type]
-    # increase local variable counter
-    localVariableCount += 1
 
-
-# Void function found. 
-# Define current_type to void
-def p_SA_VOID_FUNCTION(p):
-  '''SA_VOID_FUNCTION : empty'''
+# A new porgram is created.
+# Create function directory
+def p_SA_PROGRAM_START(p):
+  '''SA_PROGRAM_START : empty'''
   # global variables
-  global current_type
-  # define current_type
+  global functionDirectory, current_type, current_scope
+  # define current_type and current_scope
   current_type = 'void'
+  current_scope = 'global'
+  # create global function in function directory
+  functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
 
-
-# Program ended. 
-# Clear function dictionary
-def p_SA_END_PROGRAM(p):
-  '''SA_END_PROGRAM : empty'''
-  # global variables
-  global functionDirectory
-  # clear function dictionary
-  functionDirectory.clear() 
-  print operators
-  print operands
-  print types
 
 
 # Type is declared. 
@@ -573,82 +734,137 @@ def p_SA_TYPE(p):
   current_type = p[-1]
 
 
-# Table header ID is declared.
-# Verify header id is in current dataframe. If not found declare error.
-def p_SA_DF_FIND_HEADER_ID(p):
-  '''SA_DF_FIND_HEADER_ID : empty'''
-  # search for dataframe id and header id in current varTable and in global varTable
-  if not (functionDirectory[current_scope][2][p[-3]][2].has_key(p[-1]) or functionDirectory['global'][2][p[-3]][2].has_key(p[-1])) :
-    # print error message
-    print("ID does not exist '%s'" % p[-1])
 
-# Function ended. 
-# Clear function varTable
-def p_SA_END_FUNCTION(p):
-  '''SA_END_FUNCTION : empty'''
+# Void function found. 
+# Define current_type to void
+def p_SA_VOID_FUNCTION(p):
+  '''SA_VOID_FUNCTION : empty'''
   # global variables
-  global functionDirectory
-  # clear function varTable
-  varTable(functionDirectory, current_scope).clear() 
+  global current_type
+  # define current_type
+  current_type = 'void'
+
 
 
 # --------- EXTRA GRAMMARS / QUADRUPPLES ---------
 
 # id was declared
 # operands.Push(id.name) and operators.Push(id.type)
-def p_SA_EXP_1(p):
-  '''SA_EXP_1 : empty'''
+def p_SA_EXP_1_ID(p):
+  '''SA_EXP_1_ID : empty'''
+  print 'EXP 1'
+  print functionDirectory
+  print operators
+  print operands
+  print types
+  print ''
+  # get id
+  varID = p[-2]
   # push id name to operands
-  stackPush(operands, p[-2])
-  # push id type to operands
+  stackPush(operands, varID)
   # check if id is in current_scope or global
-  if varTable(functionDirectory, current_scope).has_key(p[-2]):
-    t = varTable(functionDirectory, current_scope)[p[-2]]
+  if functionDirectory[current_scope]['varTable'].has_key(varID):
+    t = functionDirectory[current_scope]['varTable'][varID]['type']
   else:
-    t = varTable(functionDirectory, 'global')[p[-2]]
+    t = functionDirectory['global']['varTable'][varID]['type']
   # push
-  stackPush(types, t[0])
+  stackPush(types, t)
+
+
+# constant was declared
+# operands.Push(constant) and types.Push(id.type)
+def p_SA_EXP_1_CTE(p):
+  '''SA_EXP_1_CTE : empty'''
+  print 'EXP 1 CTE'
+  print constantTable
+  print operators
+  print operands
+  print types
+  print ''
+  # get id
+  varID = p[-2]
+  # push id name to operands
+  stackPush(operands, varID)
+  if constantTable.has_key(varID):
+    t = constantTable[str(varID)]['type']
+  # push
+  stackPush(types, t)
+
 
 
 # * or / was declared
 # operators.Push(* or /)
 def p_SA_EXP_2(p):
   '''SA_EXP_2 : empty'''
+  print 'EXP 2'
+  print operators
+  print operands
+  print types
+  print ''
+  # get op
+  op = p[-1]
   # push * or /
-  stackPush(operators, p[-1])
+  stackPush(operators, op)
 
 
 # + or - was declared
 # operators.Push(+ or -)
 def p_SA_EXP_3(p):
   '''SA_EXP_3 : empty'''
+  print 'EXP 3'
+  print operators
+  print operands
+  print types
+  print ''
+  # get op
+  op = p[-1]
   # push + or -
-  stackPush(operators, p[-1])
+  stackPush(operators, op)
 
 
 # [<, >, <=, >=, ==, !=] was declared
 # operators.Push([<, >, <=, >=, ==, !=])
 def p_SA_EXP_4(p):
   '''SA_EXP_4 : empty'''
+  print 'EXP 4'
+  print operators
+  print operands
+  print types
+  print ''
+  # get op
+  op = p[-1]
   # push [<, >, <=, >=, ==, !=]
-  stackPush(operators, p[-1])
+  stackPush(operators, op)
 
 
 # && or || was declared
 # operators.Push(&& or ||)
 def p_SA_EXP_5(p):
   '''SA_EXP_5 : empty'''
+  print 'EXP 5'
+  print operators
+  print operands
+  print types
+  print ''
+  # get op
+  op = p[-1]
   # push && or ||
-  stackPush(operators, p[-1])
+  stackPush(operators, op)
 
 # Verify && or || are at top of stack
 # generate corresponding quadruple
 def p_SA_EXP_6(p):
   '''SA_EXP_6 : empty'''
+  print 'EXP 6'
+  print operators
+  print operands
+  print types
+  print ''
   # top stack
   op = stackTop(operators)
   # if && or || are at top of stack
-  if op == '&&' or op == '||':
+  temp_op = ['&&', '||']
+  if op in temp_op:
     # get righ and left operands 
     rightOp = stackPop(operands)
     leftOp = stackPop(operands)
@@ -658,12 +874,156 @@ def p_SA_EXP_6(p):
     # get operator
     operator = stackPop(operators)
     # validate if operation is valid
-    resultType = getResultType(leftOp, rightOp, operator)
+    resultType = getResultType(leftType, rightType, operator)
     #valid operation
     if resultType > 0:
-      #create quadruple
-      createQuadruple(operator, leftOp, rightOp, ALGO)
+      # create quadruple
+      newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      # push result to operand stack
+      stackPush(operands, tempVarCount[getTypeString(resultType)])
+      # push type result to type stack
+      stackPush(types, resultType)
+      # update tempVar count
+      tempVarCount[getTypeString(resultType)] += 1
+    else:
+      # print error message
+      print("Result type mismatch")
+
+# Verify [<, >, <=, >=, ==, !=] are at top of stack
+# generate corresponding quadruple
+def p_SA_EXP_7(p):
+  '''SA_EXP_7 : empty'''
+  print 'EXP 7'
+  print operators
+  print operands
+  print types
+  print ''
+  # top stack
+  op = stackTop(operators)
+  # if [<, >, <=, >=, ==, !=] are at top of stack
+  temp_op = ['<', '>', '<=', '>=', '==', '!=']
+  if op in temp_op:
+    # get righ and left operands 
+    rightOp = stackPop(operands)
+    leftOp = stackPop(operands)
+    # get right and left operand types
+    rightType = stackPop(types)
+    leftType = stackPop(types)
+    # get operator
+    operator = stackPop(operators)
+    # validate if operation is valid
+    resultType = getResultType(leftType, rightType, operator)    
+    #valid operation
+    if resultType > 0:
+      # create quadruple
+      newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      # push result to operand stack
+      stackPush(operands, tempVarCount[getTypeString(resultType)])
+      # push type result to type stack
+      stackPush(types, resultType)
+      # update tempVar count
+      tempVarCount[getTypeString(resultType)] += 1
+    else:
+      # print error message
+      print("Result type mismatch")
+
+# Verify + or -  are at top of stack
+# generate corresponding quadruple
+def p_SA_EXP_8(p):
+  '''SA_EXP_8 : empty'''
+  print 'EXP 8'
+  print operators
+  print operands
+  print types
+  print ''
+  # top stack
+  op = stackTop(operators)
+  # if + or -  are at top of stack
+  temp_op = ['+', '-']
+  if op in temp_op:
+    # get righ and left operands 
+    rightOp = stackPop(operands)
+    leftOp = stackPop(operands)
+    # get right and left operand types
+    rightType = stackPop(types)
+    leftType = stackPop(types)
+    # get operator
+    operator = stackPop(operators)
+    # validate if operation is valid
+    resultType = getResultType(leftType, rightType, operator)
+    #valid operation
+    if resultType > 0:
+      # create quadruple
+      newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      # push result to operand stack
+      stackPush(operands, tempVarCount[getTypeString(resultType)])
+      # push type result to type stack
+      stackPush(types, resultType)
+      # update tempVar count
+      tempVarCount[getTypeString(resultType)] += 1
+    else:
+      # print error message
+      print("Result type mismatch")
+
+# Verify * or / are at top of stack
+# generate corresponding quadruple
+def p_SA_EXP_9(p):
+  '''SA_EXP_9 : empty'''
+  print 'EXP 9'
+  print operators
+  print operands
+  print types
+  print ''
+  # top stack
+  op = stackTop(operators)
+  # if * or / are at top of stack
+  temp_op = ['*', '/']
+  if op in temp_op:
+    # get righ and left operands 
+    rightOp = stackPop(operands)
+    leftOp = stackPop(operands)
+    # get right and left operand types
+    rightType = stackPop(types)
+    leftType = stackPop(types)
+    # get operator
+    operator = stackPop(operators)
+    # validate if operation is valid
+    resultType = getResultType(leftType, rightType, operator)
+    #valid operation
+    if resultType > 0:
+      # create quadruple
+      newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      # push result to operand stack
+      stackPush(operands, tempVarCount[getTypeString(resultType)])
+      # push type result to type stack
+      stackPush(types, resultType)
+      # update tempVar count
+      tempVarCount[getTypeString(resultType)] += 1
+    else:
+      # print error message
+      print("Result type mismatch")
+
+
+# Parenthesis found in expression
+# Add fake bottom to stack
+def p_SA_FAKE_BOTTOM(p):
+  '''SA_FAKE_BOTTOM : empty'''
+  # add fake bottom to operators
+  stackPush(operators, '(')
+
+
+# Ending parenthesis found in expression
+# Remove fake bottom to stack
+def p_SA_FAKE_BOTTOM_REMOVE(p):
+  '''SA_FAKE_BOTTOM_REMOVE : empty'''
+  # add fake bottom to operators
+  stackPop(operators)
+
+
       
+
+
+# PENDING REVISAR '=' ASSIGNMENT
 
 # Build the parser
 yacc.yacc()
