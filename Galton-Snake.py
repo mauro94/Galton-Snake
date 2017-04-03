@@ -163,7 +163,9 @@ quadruples = []         # quadruples list
 jumps = []              # jumps stack
 cont = 0                # quadruple counter  
 paramCount = 0          # parameter counter
-varCounter = 0  # local variable counter
+varCounter = 0          # local variable counter
+callFunc_scope = ''     # id of function call
+pointer = 0             # pointer
 
 # Memory counters
 globalVarCount = {}
@@ -242,11 +244,11 @@ def p_BLOCK_STM(p):
                  | empty'''
 
 def p_CALLFUNC(p):
-    '''CALLFUNC : id SA_FIND_FUNC_ID lPar CALLFUNC_PARAMS rPar semi_colon '''
+    '''CALLFUNC : id SA_FIND_FUNC_ID lPar SA_CALLFUNC_2 CALLFUNC_PARAMS rPar SA_CALLFUNC_5 semi_colon SA_CALLFUNC_6'''
 
 def p_CALLFUNC_PARAMS(p):
-    '''CALLFUNC_PARAMS : EXP coma CALLFUNC_PARAMS
-                       | EXP
+    '''CALLFUNC_PARAMS : EXP SA_CALLFUNC_3 coma SA_CALLFUNC_4 CALLFUNC_PARAMS
+                       | EXP SA_CALLFUNC_3
                        | empty'''
 
 def p_CONDITION(p):
@@ -473,6 +475,17 @@ def p_SA_CREATE_CONST(p):
   global constantTable
   # get constant 
   constant = p[-1]
+  # convert values
+  try:
+    cteI = int(constant)
+  except ValueError:
+    cteI = constant
+    pass
+  try:
+    cteF = float(constant)
+  except ValueError:
+    cteF = constant
+    pass
   # validate if current constant does already exists and create
   if not constantTable.has_key(str(constant)):
     # bool
@@ -485,13 +498,13 @@ def p_SA_CREATE_CONST(p):
       else:
         cte = False
     # integer
-    elif isinstance(int(constant), int):
+    elif isinstance(cteI, int):
       # define constant
       cte = int(constant)
       #define type code
       t = 2
     # float
-    elif isinstance(float(constant), float):
+    elif isinstance(cteF, float):
       # define constant
       cte = float(constant)
       #define type code
@@ -530,9 +543,9 @@ def p_SA_CREATE_PARAMS(p):
     exit(1)
   else:
     # add variable to varTable
-    functionDirectory[current_scope]['varTable'][varID] = {'type': current_type, 'address': localVarCount[current_type]} 
+    functionDirectory[current_scope]['varTable'][varID] = {'type': getTypeCode(current_type), 'address': localVarCount[current_type]} 
     # add data type to signature
-    functionDirectory[current_scope]['signature'].append(current_type)
+    functionDirectory[current_scope]['signature'].append(getTypeCode(current_type))
     #increase global variable counter
     localVarCount[current_type] += 1
     # increase parameter counter
@@ -600,7 +613,7 @@ def p_SA_DF_FIND_HEADER_ID(p):
 def p_SA_END_FUNCTION(p):
   '''SA_END_FUNCTION : empty'''
   # global variables
-  global functionDirectory
+  global functionDirectory, cont
   # clear function varTable
   functionDirectory[current_scope]['varTable'].clear()
   # create endproc quadruple
@@ -616,7 +629,12 @@ def p_SA_END_PROGRAM(p):
   '''SA_END_PROGRAM : empty'''
   # global variables
   global functionDirectory
-  print quadruples
+  
+  c = 0
+  for q in quadruples:
+    print('quadruple ', c)
+    print('op: ', q['operator'], ' var1: ', q['operand1'], ' var2: ', q['operand2'], ' result: ', q['result'])
+    c += 1
 
   # clear function dictionary
   functionDirectory.clear() 
@@ -672,10 +690,14 @@ def p_SA_FIND_FUNC_ID(p):
 def p_SA_MAIN_START(p):
   '''SA_MAIN_START : empty'''
   # global variables
-  global current_type, current_scope
+  global current_type, current_scope, quadruples
   # define current_type and current_scope
   current_type = 'void'
   current_scope = 'main'
+  # get jump
+  jump = stackPop(jumps)
+  # fill blank space
+  quadruples[jump]['result'] = cont
   # create main function in function directory
   functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
 
@@ -727,7 +749,7 @@ def p_SA_NEW_SIGN(p):
 def p_SA_PROGRAM_START(p):
   '''SA_PROGRAM_START : empty'''
   # global variables
-  global functionDirectory, current_type, current_scope
+  global functionDirectory, current_type, current_scope, cont
   # define current_type and current_scope
   current_type = 'void'
   current_scope = 'global'
@@ -1113,7 +1135,83 @@ def p_SA_LOOP_3(p):
   # fill blank space
   quadruples[end]['result'] = cont
 
-# PENDING REVISAR '=' ASSIGNMENT
+
+
+
+# Parameter declaration is going to start
+# generate necesary quadruples and variables
+def p_SA_CALLFUNC_2(p):
+  '''SA_CALLFUNC_2 : empty'''
+  # global variables
+  global cont, parameterCount, pointer, callFunc_scope
+  # function id
+  funcID = p[-3]
+  # update current func call id
+  callFunc_scope = funcID
+  # Create ERA quadruple
+  newQuadruple(quadruples, 'era', funcID, None, None)
+  # update quadruple counter
+  cont += 1
+  # reset parameter count
+  parameterCount = 1
+  # reset pointer
+  pointer = 0
+
+
+# Parameter declared
+# validate parameter
+def p_SA_CALLFUNC_3(p):
+  '''SA_CALLFUNC_3 : empty'''
+  # global variables
+  global cont
+  # get operand
+  argument = stackPop(operands)
+  # get type
+  argumentType = stackPop(types)
+  # verify type with current parameter in pointer
+  if argumentType == functionDirectory[callFunc_scope]['signature'][pointer]:
+    # Create action quadruple
+    newQuadruple(quadruples, 'param', argument, None, pointer)
+    # update quadruple counter
+    cont += 1
+  else:
+    # print error message
+    print("Result type mismatch")
+    exit(1)
+
+
+# Another parameter will be declared
+# update pointer
+def p_SA_CALLFUNC_4(p):
+  '''SA_CALLFUNC_4 : empty'''
+  # global variables
+  global pointer
+  # update pointer
+  pointer += 1
+
+# Parameters finished
+# Verify total parameter count
+def p_SA_CALLFUNC_5(p):
+  '''SA_CALLFUNC_5 : empty'''
+  # verify parameter count
+  if pointer+1 != len(functionDirectory[callFunc_scope]['signature']):
+    # print error message
+    print("Wrong parameter count")
+    exit(1)
+
+
+# Function call finished
+# Generate necesary quadruple
+def p_SA_CALLFUNC_6(p):
+  '''SA_CALLFUNC_6 : empty'''
+  # global variables
+  global cont
+  # get function id
+  funcID = p[-8]
+  # Create gosub quadruple
+  newQuadruple(quadruples, 'GoSub', funcID, None, None)
+  # update quadruple counter
+  cont += 1
 
 # Build the parser
 yacc.yacc()

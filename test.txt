@@ -33,13 +33,13 @@ func void func1(int p1, float p2, bool p3): {
   }
   
   if(var1 > var3 && var2 == var1) {
-    var6 = 5;
+    var1 = 5;
   }
   elseif (var1 > var3 || var2 == var1) {
-    var6 = 5;
+    var1 = 5;
   }
   elseif (var1 > var3 && var2 == var1) {
-    var6 = 5;
+    var1 = 5;
   }
   else {
     var1 = 7;
