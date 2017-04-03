@@ -243,10 +243,6 @@ def getResultType(operand1, operand2, operator):
   two = getTypeString(operand2)
   op = operator
 
-  print one
-  print op
-  print two
-
   result = one + op + two
 
   if not result in cube.keys():

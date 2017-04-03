@@ -160,6 +160,7 @@ operands = []           # Operands stack
 types = []              # Types stack 
 operators = []          # Operators stack
 quadruples = []         # quadruples list
+jumps = []              # jumps stack
 cont = 0                # quadruple counter  
 paramCount = 0          # parameter counter
 varCounter = 0  # local variable counter
@@ -208,11 +209,11 @@ def p_ACCESS_ROW(p):
     '''ACCESS_ROW : id SA_FIND_ID period col lPar EXP rPar '''
 
 def p_ASSIGNMENT(p):
-    '''ASSIGNMENT : id SA_FIND_ID equal EXP semi_colon
-                  | id SA_FIND_ID equal CALLFUNC 
-                  | VAR_ARR equal EXP semi_colon
-                  | VAR_ARR equal CALLFUNC 
-                  | VAR_ARR equal lSqBr ASSIGNMENT_ARR rSqBr semi_colon '''
+    '''ASSIGNMENT : id SA_FIND_ID SA_EXP_1_ID equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
+                  | id SA_FIND_ID SA_EXP_1_ID equal SA_EXP_ADD_OP CALLFUNC SA_EXP_10 
+                  | VAR_ARR equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
+                  | VAR_ARR equal SA_EXP_ADD_OP CALLFUNC SA_EXP_10 
+                  | VAR_ARR equal SA_EXP_ADD_OP lSqBr ASSIGNMENT_ARR rSqBr semi_colon '''
 
 def p_ASSIGNMENT_ARR(p):
     '''ASSIGNMENT_ARR : EXP coma ASSIGNMENT_ARR
@@ -249,13 +250,13 @@ def p_CALLFUNC_PARAMS(p):
                        | empty'''
 
 def p_CONDITION(p):
-    '''CONDITION : if lPar SUPER_EXPRESSION rPar BLOCK 
-                 | if lPar SUPER_EXPRESSION rPar BLOCK elseif CONDITION_ELIF else BLOCK
-                 | if lPar SUPER_EXPRESSION rPar BLOCK else BLOCK'''
+    '''CONDITION : if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK SA_COND_2
+                 | if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK SA_COND_2 elseif CONDITION_ELIF else SA_COND_3 BLOCK SA_COND_2
+                 | if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK else SA_COND_3 BLOCK SA_COND_2'''
 
 def p_CONDITION_ELIF(p):
-    '''CONDITION_ELIF : lPar SUPER_EXPRESSION rPar BLOCK elseif CONDITION_ELIF
-                      | lPar SUPER_EXPRESSION rPar BLOCK'''
+    '''CONDITION_ELIF : lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK elseif CONDITION_ELIF
+                      | lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK'''
 
 def p_CORR_HEADERS(p):
     '''CORR_HEADERS : correlateHeaders lPar TABLE_HEADER coma TABLE_HEADER coma VAR_CTE rPar semi_colon '''
@@ -277,20 +278,20 @@ def p_CREATE_DF_TAGS(p):
 
 def p_EXP(p):
     '''EXP : TERM SA_EXP_8
-           | TERM SA_EXP_8 plus SA_EXP_3 EXP 
-           | TERM SA_EXP_8 minus SA_EXP_3 EXP'''
+           | TERM SA_EXP_8 plus SA_EXP_ADD_OP EXP 
+           | TERM SA_EXP_8 minus SA_EXP_ADD_OP EXP'''
 
 def p_EXPRESSION(p):
     '''EXPRESSION : EXP SA_EXP_7
                   | EXP SA_EXP_7 EXPRESSION_SYM EXPRESSION'''
 
 def p_EXPRESSION_SYM(p):
-    '''EXPRESSION_SYM : relop_ls SA_EXP_4
-                      | relop_gr SA_EXP_4
-                      | relop_lsequal SA_EXP_4
-                      | relop_grequal SA_EXP_4
-                      | relop_equals SA_EXP_4
-                      | relop_notequal SA_EXP_4'''
+    '''EXPRESSION_SYM : relop_ls SA_EXP_ADD_OP
+                      | relop_gr SA_EXP_ADD_OP
+                      | relop_lsequal SA_EXP_ADD_OP
+                      | relop_grequal SA_EXP_ADD_OP
+                      | relop_equals SA_EXP_ADD_OP
+                      | relop_notequal SA_EXP_ADD_OP'''
 
 def p_FACTOR(p):
     '''FACTOR : lPar SA_FAKE_BOTTOM EXPRESSION SA_FAKE_BOTTOM_REMOVE rPar 
@@ -307,7 +308,7 @@ def p_INSTANTIATE(p):
                    | VARS'''
 
 def p_LOOP(p):
-    '''LOOP : while lPar SUPER_EXPRESSION rPar BLOCK'''
+    '''LOOP : while SA_LOOP_1 lPar SUPER_EXPRESSION rPar SA_LOOP_2 BLOCK SA_LOOP_3'''
 
 def p_OPERATION(p):
     '''OPERATION : BINDINGS 
@@ -367,16 +368,16 @@ def p_STATEMENT(p):
 
 def p_SUPER_EXPRESSION(p):
     '''SUPER_EXPRESSION : EXPRESSION SA_EXP_6
-                        | EXPRESSION SA_EXP_6 relop_and SA_EXP_5 SUPER_EXPRESSION 
-                        | EXPRESSION SA_EXP_6 relop_or SA_EXP_5 SUPER_EXPRESSION'''
+                        | EXPRESSION SA_EXP_6 relop_and SA_EXP_ADD_OP SUPER_EXPRESSION 
+                        | EXPRESSION SA_EXP_6 relop_or SA_EXP_ADD_OP SUPER_EXPRESSION'''
 
 def p_TABLE_HEADER(p):
     '''TABLE_HEADER : id SA_FIND_ID money_sign id SA_DF_FIND_HEADER_ID'''
 
 def p_TERM(p):
     '''TERM : FACTOR SA_EXP_9
-            | FACTOR SA_EXP_9 times SA_EXP_2 TERM
-            | FACTOR SA_EXP_9 divide SA_EXP_2 TERM'''
+            | FACTOR SA_EXP_9 times SA_EXP_ADD_OP TERM
+            | FACTOR SA_EXP_9 divide SA_EXP_ADD_OP TERM'''
 
 def p_TYPE(p):
     '''TYPE : int SA_TYPE
@@ -416,6 +417,7 @@ def p_empty(p):
 # Error
 def p_error(p):
     print("Syntax error at '%s'" % p.value)
+    exit(1)
 
 
 # --------- EXTRA GRAMMARS / SEMANTIC ACTIONS ---------
@@ -456,6 +458,7 @@ def p_SA_ADD_DF_TAG(p):
   if functionDirectory[current_scope]['varTable'][varID].has_key(tag):
     # print error message
     print("Tag already exists '%s'" % tag)
+    exit(1)
   else:
     # add new tag
     functionDirectory[current_scope]['varTable'][varID][tag] = tag
@@ -524,6 +527,7 @@ def p_SA_CREATE_PARAMS(p):
   if functionDirectory[current_scope]['varTable'].has_key(varID):
     # print error message
     print("Parameter already exists '%s'" % varID)
+    exit(1)
   else:
     # add variable to varTable
     functionDirectory[current_scope]['varTable'][varID] = {'type': current_type, 'address': localVarCount[current_type]} 
@@ -550,7 +554,8 @@ def p_SA_CREATE_VAR(p):
   # validate if current variable does already exists in current varTable and global varTable
   if functionDirectory[current_scope]['varTable'].has_key(varID) or functionDirectory['global']['varTable'].has_key(varID):
     # print error message
-    print("ID already exists '%s'" % p[-1])
+    print("ID already exists '%s'" % varID)
+    exit(1)
   else:
     # dataframe
     if current_type == 'dataframe':
@@ -598,6 +603,10 @@ def p_SA_END_FUNCTION(p):
   global functionDirectory
   # clear function varTable
   functionDirectory[current_scope]['varTable'].clear()
+  # create endproc quadruple
+  newQuadruple(quadruples, 'EndProc', None, None, None)
+  # update quadruple counter
+  cont += 1
 
 
 
@@ -640,6 +649,7 @@ def p_SA_FIND_ID(p):
   if not (functionDirectory[current_scope]['varTable'].has_key(varID) or functionDirectory['global']['varTable'].has_key(varID)):
     # print error message
     print("ID does not exist '%s'" % varID)
+    exit(1)
 
 
 
@@ -653,6 +663,7 @@ def p_SA_FIND_FUNC_ID(p):
   if not funcID in functionDirectory.keys() :
     # print error message
     print("Function ID does not exist '%s'" % funcID)
+    exit(1)
 
 
 
@@ -693,6 +704,7 @@ def p_SA_NEW_FUNCTION(p):
   if functionDirectory.has_key(current_scope):
     # print error message
     print("Function ID already exists '%s'" % current_scope)
+    exit(1)
   else:
     # create new function in function directory
     functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
@@ -721,6 +733,12 @@ def p_SA_PROGRAM_START(p):
   current_scope = 'global'
   # create global function in function directory
   functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
+  # create first quadruple (jump to main)
+  newQuadruple(quadruples, 'GoTo', None, None, -1)
+  # update quadruple counter
+  cont += 1
+  # push cont to jumps
+  stackPush(jumps, cont-1)
 
 
 
@@ -752,12 +770,6 @@ def p_SA_VOID_FUNCTION(p):
 # operands.Push(id.name) and operators.Push(id.type)
 def p_SA_EXP_1_ID(p):
   '''SA_EXP_1_ID : empty'''
-  print 'EXP 1'
-  print functionDirectory
-  print operators
-  print operands
-  print types
-  print ''
   # get id
   varID = p[-2]
   # push id name to operands
@@ -775,12 +787,6 @@ def p_SA_EXP_1_ID(p):
 # operands.Push(constant) and types.Push(id.type)
 def p_SA_EXP_1_CTE(p):
   '''SA_EXP_1_CTE : empty'''
-  print 'EXP 1 CTE'
-  print constantTable
-  print operators
-  print operands
-  print types
-  print ''
   # get id
   varID = p[-2]
   # push id name to operands
@@ -793,73 +799,22 @@ def p_SA_EXP_1_CTE(p):
 
 
 # * or / was declared
+# SA EXP 2 - 5
 # operators.Push(* or /)
-def p_SA_EXP_2(p):
-  '''SA_EXP_2 : empty'''
-  print 'EXP 2'
-  print operators
-  print operands
-  print types
-  print ''
+def p_SA_EXP_ADD_OP(p):
+  '''SA_EXP_ADD_OP : empty'''
   # get op
   op = p[-1]
   # push * or /
   stackPush(operators, op)
 
 
-# + or - was declared
-# operators.Push(+ or -)
-def p_SA_EXP_3(p):
-  '''SA_EXP_3 : empty'''
-  print 'EXP 3'
-  print operators
-  print operands
-  print types
-  print ''
-  # get op
-  op = p[-1]
-  # push + or -
-  stackPush(operators, op)
-
-
-# [<, >, <=, >=, ==, !=] was declared
-# operators.Push([<, >, <=, >=, ==, !=])
-def p_SA_EXP_4(p):
-  '''SA_EXP_4 : empty'''
-  print 'EXP 4'
-  print operators
-  print operands
-  print types
-  print ''
-  # get op
-  op = p[-1]
-  # push [<, >, <=, >=, ==, !=]
-  stackPush(operators, op)
-
-
-# && or || was declared
-# operators.Push(&& or ||)
-def p_SA_EXP_5(p):
-  '''SA_EXP_5 : empty'''
-  print 'EXP 5'
-  print operators
-  print operands
-  print types
-  print ''
-  # get op
-  op = p[-1]
-  # push && or ||
-  stackPush(operators, op)
-
 # Verify && or || are at top of stack
 # generate corresponding quadruple
 def p_SA_EXP_6(p):
   '''SA_EXP_6 : empty'''
-  print 'EXP 6'
-  print operators
-  print operands
-  print types
-  print ''
+  # global variables
+  global cont
   # top stack
   op = stackTop(operators)
   # if && or || are at top of stack
@@ -879,6 +834,8 @@ def p_SA_EXP_6(p):
     if resultType > 0:
       # create quadruple
       newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      # update quadruple counter
+      cont += 1
       # push result to operand stack
       stackPush(operands, tempVarCount[getTypeString(resultType)])
       # push type result to type stack
@@ -888,16 +845,14 @@ def p_SA_EXP_6(p):
     else:
       # print error message
       print("Result type mismatch")
+      exit(1)
 
 # Verify [<, >, <=, >=, ==, !=] are at top of stack
 # generate corresponding quadruple
 def p_SA_EXP_7(p):
   '''SA_EXP_7 : empty'''
-  print 'EXP 7'
-  print operators
-  print operands
-  print types
-  print ''
+  # global variables
+  global cont
   # top stack
   op = stackTop(operators)
   # if [<, >, <=, >=, ==, !=] are at top of stack
@@ -917,6 +872,8 @@ def p_SA_EXP_7(p):
     if resultType > 0:
       # create quadruple
       newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      # update quadruple counter
+      cont += 1
       # push result to operand stack
       stackPush(operands, tempVarCount[getTypeString(resultType)])
       # push type result to type stack
@@ -926,16 +883,14 @@ def p_SA_EXP_7(p):
     else:
       # print error message
       print("Result type mismatch")
+      exit(1)
 
 # Verify + or -  are at top of stack
 # generate corresponding quadruple
 def p_SA_EXP_8(p):
   '''SA_EXP_8 : empty'''
-  print 'EXP 8'
-  print operators
-  print operands
-  print types
-  print ''
+  # global variables
+  global cont
   # top stack
   op = stackTop(operators)
   # if + or -  are at top of stack
@@ -955,6 +910,8 @@ def p_SA_EXP_8(p):
     if resultType > 0:
       # create quadruple
       newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      # update quadruple counter
+      cont += 1
       # push result to operand stack
       stackPush(operands, tempVarCount[getTypeString(resultType)])
       # push type result to type stack
@@ -964,16 +921,14 @@ def p_SA_EXP_8(p):
     else:
       # print error message
       print("Result type mismatch")
+      exit(1)
 
 # Verify * or / are at top of stack
 # generate corresponding quadruple
 def p_SA_EXP_9(p):
   '''SA_EXP_9 : empty'''
-  print 'EXP 9'
-  print operators
-  print operands
-  print types
-  print ''
+  # global variables
+  global cont
   # top stack
   op = stackTop(operators)
   # if * or / are at top of stack
@@ -993,6 +948,8 @@ def p_SA_EXP_9(p):
     if resultType > 0:
       # create quadruple
       newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      # update quadruple counter
+      cont += 1
       # push result to operand stack
       stackPush(operands, tempVarCount[getTypeString(resultType)])
       # push type result to type stack
@@ -1002,6 +959,40 @@ def p_SA_EXP_9(p):
     else:
       # print error message
       print("Result type mismatch")
+      exit(1)
+
+
+# Verify = are at top of stack
+# generate corresponding quadruple
+def p_SA_EXP_10(p):
+  '''SA_EXP_10 : empty'''
+  # global variables
+  global cont
+  # top stack
+  op = stackTop(operators)
+  # if * or / are at top of stack
+  temp_op = ['=']
+  if op in temp_op:
+    # get righ and left operands 
+    rightOp = stackPop(operands)
+    leftOp = stackPop(operands)
+    # get right and left operand types
+    rightType = stackPop(types)
+    leftType = stackPop(types)
+    # get operator
+    operator = stackPop(operators)
+    # validate if operation is valid
+    resultType = getResultType(leftType, rightType, operator)
+    #valid operation
+    if resultType > 0:
+      # create quadruple
+      newQuadruple(quadruples, operator, rightOp, None, leftOp)
+      # update quadruple counter
+      cont += 1
+    else:
+      # print error message
+      print("Result type mismatch")
+      exit(1)
 
 
 # Parenthesis found in expression
@@ -1020,8 +1011,107 @@ def p_SA_FAKE_BOTTOM_REMOVE(p):
   stackPop(operators)
 
 
-      
 
+# Ending parenthesis after conditional expression
+# Validate condition and generate quadruples
+def p_SA_COND_1(p):
+  '''SA_COND_1 : empty'''
+  # global variables
+  global cont
+  # get type top
+  t = stackPop(types)
+  # validate previous expression is bool
+  if t != getTypeCode('bool'):
+    # print error message
+    print("Type mismatch")
+    exit(1)
+  else:
+    # get current operand
+    result = stackPop(operands)
+    # create quadruple
+    newQuadruple(quadruples, 'GoToF', result, None, 0)
+    # update quadruple counter
+    cont += 1
+    # push quadruple counter to jumps
+    stackPush(jumps, cont-1)
+
+
+# Ending of Block in conditional expression
+# End block, fill blank jump
+def p_SA_COND_2(p):
+  '''SA_COND_2 : empty'''
+  # get top jump
+  end = stackPop(jumps)
+  # fill blank space
+  quadruples[end]['result'] = cont
+
+# Else statement
+# generate final quadruple for if statement
+def p_SA_COND_3(p):
+  '''SA_COND_3 : empty'''
+  # global variables
+  global cont
+  # Cretae quadruple
+  newQuadruple(quadruples, 'GoTo', None, None, -1)
+  # update quadruple counter
+  cont += 1
+  # get top jump
+  jump = stackPop(jumps)
+  # push cont to jumps
+  stackPush(jumps, cont-1)
+  # fill blank space
+  quadruples[jump]['result'] = cont
+
+
+
+# Begining of loop statement
+# push to jumps
+def p_SA_LOOP_1(p):
+  '''SA_LOOP_1 : empty'''
+  # push to jumps
+  stackPush(jumps, cont)
+
+
+# Loop expression ended
+# Validate expression and create quadruple
+def p_SA_LOOP_2(p):
+  '''SA_LOOP_2 : empty'''
+  # global variables
+  global cont
+  # get type
+  t = stackPop(types)
+  # validate previous expression is bool
+  if t != getTypeCode('bool'):
+    # print error message
+    print("Type mismatch")
+    exit(1)
+  else:
+    # get current operand
+    result = stackPop(operands)
+    # create quadruple
+    newQuadruple(quadruples, 'GoToF', result, None, 0)
+    # update quadruple counter
+    cont += 1
+    # push quadruple counter to jumps
+    stackPush(jumps, cont-1)
+
+
+# End of loop block
+# generate final quadruple for loop
+def p_SA_LOOP_3(p):
+  '''SA_LOOP_3 : empty'''
+  # global variables
+  global cont
+  # get jump
+  end = stackPop(jumps)
+  # get jump
+  r = stackPop(jumps)
+  # Create quadruple
+  newQuadruple(quadruples, 'GoTo', None, None, r)
+  # update quadruple counter
+  cont += 1
+  # fill blank space
+  quadruples[end]['result'] = cont
 
 # PENDING REVISAR '=' ASSIGNMENT
 
