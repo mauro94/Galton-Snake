@@ -233,7 +233,7 @@ def p_BINDINGS(p):
 
 def p_BLOCK(p):
     '''BLOCK : lBr BLOCK_INST SA_FINAL_FUNC_VALUES BLOCK_STM rBr 
-             | lBr BLOCK_INST SA_FINAL_FUNC_VALUES BLOCK_STM return EXP semi_colon rBr '''
+             | lBr BLOCK_INST SA_FINAL_FUNC_VALUES BLOCK_STM return EXP SA_RET semi_colon rBr '''
 
 def p_BLOCK_INST(p):
     '''BLOCK_INST : INSTANTIATE BLOCK_INST 
@@ -244,7 +244,7 @@ def p_BLOCK_STM(p):
                  | empty'''
 
 def p_CALLFUNC(p):
-    '''CALLFUNC : id SA_FIND_FUNC_ID lPar SA_CALLFUNC_2 CALLFUNC_PARAMS rPar SA_CALLFUNC_5 semi_colon SA_CALLFUNC_6'''
+    '''CALLFUNC : id SA_FIND_FUNC_ID lPar SA_CALLFUNC_2 CALLFUNC_PARAMS rPar SA_CALLFUNC_5 semi_colon SA_CALLFUNC_6 SA_CALLFUNC_7'''
 
 def p_CALLFUNC_PARAMS(p):
     '''CALLFUNC_PARAMS : EXP SA_CALLFUNC_3 coma SA_CALLFUNC_4 CALLFUNC_PARAMS
@@ -467,7 +467,7 @@ def p_SA_ADD_DF_TAG(p):
 
 
 
-  # New constant. 
+# New constant. 
 # Add new constant to constantTable. If not found ignore.
 def p_SA_CREATE_CONST(p):
   '''SA_CREATE_CONST : empty'''
@@ -633,7 +633,7 @@ def p_SA_END_PROGRAM(p):
   c = 0
   for q in quadruples:
     print('quadruple ', c)
-    print('op: ', q['operator'], ' var1: ', q['operand1'], ' var2: ', q['operand2'], ' result: ', q['result'])
+    print('op: ', q['operator'], ' oper1: ', q['operand1'], ' oper2: ', q['operand2'], ' result: ', q['result'])
     c += 1
 
   # clear function dictionary
@@ -1193,11 +1193,13 @@ def p_SA_CALLFUNC_4(p):
 # Verify total parameter count
 def p_SA_CALLFUNC_5(p):
   '''SA_CALLFUNC_5 : empty'''
-  # verify parameter count
-  if pointer+1 != len(functionDirectory[callFunc_scope]['signature']):
-    # print error message
-    print("Wrong parameter count")
-    exit(1)
+  # verify if function does not have any parameters
+  if functionDirectory[callFunc_scope]['signature']:
+    # verify parameter count
+    if pointer+1 != len(functionDirectory[callFunc_scope]['signature']):
+      # print error message
+      print("Wrong parameter count")
+      exit(1)
 
 
 # Function call finished
@@ -1213,12 +1215,55 @@ def p_SA_CALLFUNC_6(p):
   # update quadruple counter
   cont += 1
 
+# Function check if there is return value
+# Generate necesary quadruple
+def p_SA_CALLFUNC_7(p):
+  '''SA_CALLFUNC_7 : empty'''
+  # Global Variables
+  global cont
+  # Get function id
+  funcID = p[-9]
+  # Get function type
+  funcType = functionDirectory[callFunc_scope]['type']
+  # Verify that function has a return type
+  if datatypeCode[funcType] > 0:
+  # Generate assignment quadruple to function value
+    newQuadruple(quadruples, '=', funcID, None, tempVarCount[funcType])
+  # Push temporary value to operands
+    stackPush(operands, tempVarCount[funcType])
+  # Push temporary value to types
+    stackPush(types, datatypeCode[funcType])
+  # Update tempVar count
+    tempVarCount[funcType] += 1
+
+# Return value
+# Generate necesary quadruple
+def p_SA_RET(p):
+  '''SA_RET : empty'''
+  # Global variables
+  global cont
+  # Temporary variables for type validation
+  returnType = stackPop(types)
+  functionRetType = datatypeCode[functionDirectory[current_scope]['type']]
+  # Value to return, result of expression
+  returnValue = stackPop(operands)
+  # Validate type of expression with return type of function
+  if functionRetType == returnType:
+  # Create return quadruple
+    newQuadruple(quadruples, 'Return', None, None, returnValue)
+  # Update quadruple counter
+    cont += 1
+  else:
+    print("Return type mismatch")
+    exit(1)
+
 # Build the parser
 yacc.yacc()
 
 # -------------------------- FILE IMPORTS --------------------------
 from Cube import *
 from Functions import *
+from VirtualMachine import *
 
 # -------------------------- TEST --------------------------
 

@@ -1,0 +1,13 @@
+int a;
+
+func int testing(int y): {
+  return y*3;
+}
+
+func int variable(int x): {
+  return x*3;
+}
+
+main: {
+  a = testing();
+}
