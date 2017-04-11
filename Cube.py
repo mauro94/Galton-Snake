@@ -1,4 +1,4 @@
-# Seamtnic Cube
+# Semantic Cube
 # Patricio Sanchez A01191893
 # Mauro Amarante A01191893
 
@@ -61,7 +61,6 @@ initial_temp_float = 56666
 initial_temp_char = 59999
 initial_temp_string = 63332
 initial_temp_dataframe = 66665
-
 
 # Constant memory
 initial_constant_bool = 70000
