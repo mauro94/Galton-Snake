@@ -27,6 +27,7 @@ reserved = {
    'dataframe' : 'dataframe',
    'void' : 'void',
    'func' : 'func',
+   'call' : 'call',
    'while' : 'while',
    'printCell' : 'printCell',
    'printCol' : 'printCol',
@@ -212,7 +213,6 @@ def p_ACCESS_ROW(p):
 
 def p_ASSIGNMENT(p):
     '''ASSIGNMENT : id SA_FIND_ID SA_EXP_1_ID equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
-                  | id SA_FIND_ID SA_EXP_1_ID equal SA_EXP_ADD_OP CALLFUNC SA_EXP_10 
                   | VAR_ARR equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
                   | VAR_ARR equal SA_EXP_ADD_OP CALLFUNC SA_EXP_10 
                   | VAR_ARR equal SA_EXP_ADD_OP lSqBr ASSIGNMENT_ARR rSqBr semi_colon '''
@@ -244,7 +244,10 @@ def p_BLOCK_STM(p):
                  | empty'''
 
 def p_CALLFUNC(p):
-    '''CALLFUNC : id SA_FIND_FUNC_ID lPar SA_CALLFUNC_2 CALLFUNC_PARAMS rPar SA_CALLFUNC_5 semi_colon SA_CALLFUNC_6 SA_CALLFUNC_7'''
+    '''CALLFUNC : call id SA_FIND_FUNC_ID lPar SA_CALLFUNC_2 CALLFUNC_PARAMS rPar SA_CALLFUNC_5 semi_colon SA_CALLFUNC_6'''
+
+def p_CALLFUNC_EXP(p):
+    '''CALLFUNC_EXP : id SA_FIND_FUNC_ID lPar SA_CALLFUNC_2 CALLFUNC_PARAMS rPar SA_CALLFUNC_5 SA_CALLFUNC_6 SA_CALLFUNC_7'''
 
 def p_CALLFUNC_PARAMS(p):
     '''CALLFUNC_PARAMS : EXP SA_CALLFUNC_3 coma SA_CALLFUNC_4 CALLFUNC_PARAMS
@@ -400,7 +403,8 @@ def p_VAR_CTE(p):
                | true SA_CREATE_CONST SA_EXP_1_CTE 
                | false SA_CREATE_CONST SA_EXP_1_CTE
                | VAR_ARR SA_EXP_1_ID
-               | null SA_CREATE_CONST SA_EXP_1_CTE'''
+               | null SA_CREATE_CONST SA_EXP_1_CTE
+               | CALLFUNC_EXP'''
 
 def p_VARS(p):
     '''VARS : TYPE VARS_ID semi_colon '''
@@ -1210,6 +1214,10 @@ def p_SA_CALLFUNC_6(p):
   global cont
   # get function id
   funcID = p[-8]
+  # In case the function is in an expression
+  # -7 because it does not have a ;
+  if funcID is None:
+    funcID = p[-7]
   # Create gosub quadruple
   newQuadruple(quadruples, 'GoSub', funcID, None, None)
   # update quadruple counter
@@ -1222,7 +1230,7 @@ def p_SA_CALLFUNC_7(p):
   # Global Variables
   global cont
   # Get function id
-  funcID = p[-9]
+  funcID = p[-8]
   # Get function type
   funcType = functionDirectory[callFunc_scope]['type']
   # Verify that function has a return type

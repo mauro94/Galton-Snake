@@ -4,10 +4,11 @@ func int testing(int y): {
   return y*3;
 }
 
-func int variable(int x): {
-  return x*3;
+func void fun2(int x): {
+  a = x + 2;
 }
 
 main: {
-  a = testing();
+  a = testing(2) + 2;
+  call fun2(testing(2));
 }
