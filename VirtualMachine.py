@@ -9,112 +9,225 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
     #Arithmetic
     # Addition
     if q['operator'] == '+':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      rightOpAddress = q['operand2']
+      resultAddress = q['resultAddress']
+
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue + rightOpValue
 
       # Store value in memory
+      setValue(resultValue, resultAddress)
 
     # Substraction
     elif q['operator'] == '-':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      rightOpAddress = q['operand2']
+      resultAddress = q['resultAddress']
+
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue - rightOpValue
 
       # Store value in memory
+      setValue(resultValue, resultAddress)
 
     # Multiplication
     elif q['operator'] == '*':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      rightOpAddress = q['operand2']
+      resultAddress = q['resultAddress']
+
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue * rightOpValue
 
       # Store value in memory
+      setValue(resultValue, resultAddress)
 
     # Division
     elif q['operator'] == '/':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      rightOpAddress = q['operand2']
+      resultAddress = q['resultAddress']
 
-      # Store value in memory
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      if rightOpValue != 0:
+        resultValue = leftOpValue / rightOpValue
+
+        # Store value in memory
+        setValue(resultValue, resultAddress)
+
+      else:
+        print('Division by 0')
+        exit(1)
 
     # Assignment
     elif q['operator'] == '=':
-      leftOperand = q['operand1']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      resultAddress = q['resultAddress']
+
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
 
       # Store value in memory
+      setValue(leftOpValue, resultAddress)
 
     # Comparison
     # <, >, <=, >=, ==, !=, &&, ||
     elif q['operator'] == '<':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      rightOpAddress = q['operand2']
+      resultAddress = q['resultAddress']
+
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue < rightOpValue
+
+      # Store value in memory
+      setValue(resultValue, resultAddress)
 
     elif q['operator'] == '>':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      rightOpAddress = q['operand2']
+      resultAddress = q['resultAddress']
+
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue > rightOpValue
+
+      # Store value in memory
+      setValue(resultValue, resultAddress)
 
     elif q['operator'] == '<=':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      rightOpAddress = q['operand2']
+      resultAddress = q['resultAddress']
+
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue <= rightOpValue
+
+      # Store value in memory
+      setValue(resultValue, resultAddress)
 
     elif q['operator'] == '>=':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      rightOpAddress = q['operand2']
+      resultAddress = q['resultAddress']
+
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue >= rightOpValue
+
+      # Store value in memory
+      setValue(resultValue, resultAddress)
 
     elif q['operator'] == '==':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      rightOpAddress = q['operand2']
+      resultAddress = q['resultAddress']
+
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue == rightOpValue
+
+      # Store value in memory
+      setValue(resultValue, resultAddress)
 
     elif q['operator'] == '!=':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      rightOpAddress = q['operand2']
+      resultAddress = q['resultAddress']
+
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue != rightOpValue
+
+      # Store value in memory
+      setValue(resultValue, resultAddress)
 
     elif q['operator'] == '||':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue or rightOpValue
+
+      # Store value in memory
+      setValue(resultValue, resultAddress)
 
     elif q['operator'] == '&&':
-      leftOperand = q['operand1']
-      rightOperand = q['operand2']
-      result = q['result']
+      #Get value from memory
+      leftOpValue = getValue(leftOpAddress)
+      rightOpValue = getValue(rightOpAddress)
+
+      # Perform operation
+      resultValue = leftOpValue and rightOpValue
+
+      # Store value in memory
+      setValue(resultValue, resultAddress)
 
     # Other operators
     # Param
     elif q['operator'] == 'param':
-      leftOperand = q['operand1']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      resultAddress = q['resultAddress']
 
     # Return
     elif q['operator'] == 'Return':
-      leftOperand = q['operand1']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      resultAddress = q['resultAddress']
 
     # GoSub
     elif q['operator'] == 'GoSub':
-      leftOperand = q['operand1']
+      leftOpAddress = q['operand1']
 
     # GotoF
     elif q['operator'] == 'GoToF':
-      leftOperand = q['operand1']
-      result = q['result']
+      leftOpAddress = q['operand1']
+      resultAddress = q['resultAddress']
 
     # Goto
     elif q['operator'] == 'GoTo':
-      result = q['result']
+      resultAddress = q['resultAddress']
 
     # ERA
     elif q['operator'] == 'era':
-      leftOperand = q['operand1']
+      leftOpAddress = q['operand1']
 
     # Print
     # elif q['operator'] == 'print'
@@ -127,3 +240,12 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
 
     # END
     # elif q['operator'] == 'End'
+
+# Temporary functions
+# This will be implemented in memory
+def getValue(address):
+  print(address)
+
+def setValue(value, address):
+  print(value)
+  print(address)
