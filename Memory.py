@@ -41,6 +41,33 @@ class Memory:
     # self.const_strings    = range(const_variables['string'] + 1)
     # self.const_dataframes = range(const_variables['dataframe'] + 1)
 
+  # Get type based on address
+  # def getType (address):
+  #   if between(address, initial_global_bool, initial_global_int):
+  #     return 'bool'
+  #   elif between(address, initial_global_int, initial_global_float):
+  #     return 'int'
+  #   elif between(address, initial_global_float, initial_global_char):
+  #     return 'float'
+  #   elif between(address, initial_global_char, initial_global_string):
+  #     return 'char'
+  #   elif between(address, initial_global_string, initial_global_dataframe):
+  #     return 'string'
+  #   elif between(address, initial_global_dataframe, initial_local_bool):
+  #     return 'dataframe'
+
+  # Get scope based on address
+  def getScope (address):
+    if between(address, initial_global_bool, initial_local_bool):
+      return 'global'
+    elif between(address, initial_local_bool, initial_temp_bool):
+      return 'local'
+    elif between(address, initial_temp_bool, initial_constant_bool):
+      return 'temp'
+    else:
+      return 'constant'
+
+
   # Function to check values between
   def between (value, low, high):
-    return (low >= value && value < high)
+    return (low <= value < high)

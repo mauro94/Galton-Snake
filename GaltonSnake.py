@@ -1271,7 +1271,8 @@ yacc.yacc()
 # -------------------------- FILE IMPORTS --------------------------
 from Cube import *
 from Functions import *
-#from VirtualMachine import *
+# from VirtualMachine import *
+# from Memory import *?
 
 # -------------------------- TEST --------------------------
 
