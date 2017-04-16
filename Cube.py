@@ -37,39 +37,6 @@ opCode = {
   'divide' : 113
 }
 
-# 20,000 slots per block
-# Global memory
-initial_global_bool = 10000
-initial_global_int = 13333
-initial_global_float = 16666
-initial_global_char = 19999
-initial_global_string = 23332
-initial_global_dataframe = 26665
-
-# Local memory
-initial_local_bool = 30000
-initial_local_int = 33333
-initial_local_float = 36666
-initial_local_char = 49999
-initial_local_string = 43332
-initial_local_dataframe = 46665
-
-# Temporal memory
-initial_temp_bool = 50000
-initial_temp_int = 53333
-initial_temp_float = 56666
-initial_temp_char = 59999
-initial_temp_string = 63332
-initial_temp_dataframe = 66665
-
-# Constant memory
-initial_constant_bool = 70000
-initial_constnt_int = 73333
-initial_constant_float = 76666
-initial_constant_char = 79999
-initial_constant_string = 83332
-initial_constant_dataframe = 86665
-
 cube = {}
 
 # Assignment

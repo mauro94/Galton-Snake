@@ -4,7 +4,7 @@ char var4;
 string var9;
 bool var10;
 
-func void func1(int p1, float p2, bool p3): {
+func int func1(int p1, float p2, bool p3): {
   int var11, var12;
   float var13;
   char var14;
@@ -34,10 +34,10 @@ func void func1(int p1, float p2, bool p3): {
     var1 = 7;
   }
 
-  return var1 + var3;
+  return var1;
 }
 
-func void func2(int p1): {
+func int func2(int p1): {
   int var31, var32;
   float var33;
   char var34;

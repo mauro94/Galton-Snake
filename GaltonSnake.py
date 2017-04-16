@@ -169,37 +169,38 @@ callFunc_scope = ''     # id of function call
 pointer = 0             # pointer
 
 # Memory counters
+# 20,000 slots per block
 globalVarCount = {}
-globalVarCount['bool'] = 0
-globalVarCount['int'] = 0
-globalVarCount['float'] = 0
-globalVarCount['char'] = 0
-globalVarCount['string'] = 0
-globalVarCount['dataframe'] = 0
+globalVarCount['bool'] = 10000
+globalVarCount['int'] = 13333
+globalVarCount['float'] = 16666
+globalVarCount['char'] = 19999
+globalVarCount['string'] = 23332
+globalVarCount['dataframe'] = 26665
 
 localVarCount = {}
-localVarCount['bool'] = 0
-localVarCount['int'] = 0
-localVarCount['float'] = 0
-localVarCount['char'] = 0
-localVarCount['string'] = 0
-localVarCount['dataframe'] = 0
+localVarCount['bool'] = 30000
+localVarCount['int'] = 33333
+localVarCount['float'] = 36666
+localVarCount['char'] = 49999
+localVarCount['string'] = 43332
+localVarCount['dataframe'] = 46665
 
 tempVarCount = {}
-tempVarCount['bool'] = 0
-tempVarCount['int'] = 0
-tempVarCount['float'] = 0
-tempVarCount['char'] = 0
-tempVarCount['string'] = 0
-tempVarCount['dataframe'] = 0
+tempVarCount['bool'] = 50000
+tempVarCount['int'] = 53333
+tempVarCount['float'] = 56666
+tempVarCount['char'] = 59999
+tempVarCount['string'] = 63332
+tempVarCount['dataframe'] = 66665
 
 constVarCount = {}
-constVarCount['bool'] = 0
-constVarCount['int'] = 0
-constVarCount['float'] = 0
-constVarCount['char'] = 0
-constVarCount['string'] = 0
-constVarCount['dataframe'] = 0
+constVarCount['bool'] = 70000
+constVarCount['int'] = 73333
+constVarCount['float'] = 76666
+constVarCount['char'] = 79999
+constVarCount['string'] = 83332
+constVarCount['dataframe'] = 86665
 
 # Starting grammar
 start = 'PROGRAM'
@@ -260,7 +261,7 @@ def p_CONDITION(p):
                  | if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK else SA_COND_3 BLOCK SA_COND_2'''
 
 def p_CONDITION_ELIF(p):
-    '''CONDITION_ELIF : lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK elseif CONDITION_ELIF
+    '''CONDITION_ELIF : lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK SA_COND_2 elseif CONDITION_ELIF
                       | lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK'''
 
 def p_CORR_HEADERS(p):
@@ -633,11 +634,13 @@ def p_SA_END_PROGRAM(p):
   '''SA_END_PROGRAM : empty'''
   # global variables
   global functionDirectory
+
+  # create end quadruple
+  newQuadruple(quadruples, 'end', None, None, None)
   
   c = 0
   for q in quadruples:
-    print('quadruple ', c)
-    print('op: ', q['operator'], ' oper1: ', q['operand1'], ' oper2: ', q['operand2'], ' result: ', q['result'])
+    print c, '  op: ', q['operator'], ' oper1: ', q['operand1'], ' oper2: ', q['operand2'], ' result: ', q['result']
     c += 1
 
   # clear function dictionary
