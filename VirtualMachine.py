@@ -3,19 +3,21 @@ from GaltonSnake import *
 from Memory import *
 
 def virtualMachine (functions, quadruples, global_variables, local_variables, temp_variables, const_variables):
-  #Memory stuff
+  # Memory stuff
 
+  # Iterate all quadruples
   for q in quadruples:
+    # Get values of operands and result address
+    leftOp = q['operand1']
+    rightOp = q['operand2']
+    resultAddress = q['resultAddress']
+
     #Arithmetic
     # Addition
     if q['operator'] == '+':
-      leftOpAddress = q['operand1']
-      rightOpAddress = q['operand2']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue + rightOpValue
@@ -25,13 +27,9 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
 
     # Substraction
     elif q['operator'] == '-':
-      leftOpAddress = q['operand1']
-      rightOpAddress = q['operand2']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue - rightOpValue
@@ -41,13 +39,9 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
 
     # Multiplication
     elif q['operator'] == '*':
-      leftOpAddress = q['operand1']
-      rightOpAddress = q['operand2']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue * rightOpValue
@@ -57,13 +51,9 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
 
     # Division
     elif q['operator'] == '/':
-      leftOpAddress = q['operand1']
-      rightOpAddress = q['operand2']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       if rightOpValue != 0:
@@ -78,11 +68,8 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
 
     # Assignment
     elif q['operator'] == '=':
-      leftOpAddress = q['operand1']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
+      leftOpValue = getValue(leftOp)
 
       # Store value in memory
       setValue(leftOpValue, resultAddress)
@@ -90,13 +77,9 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
     # Comparison
     # <, >, <=, >=, ==, !=, &&, ||
     elif q['operator'] == '<':
-      leftOpAddress = q['operand1']
-      rightOpAddress = q['operand2']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue < rightOpValue
@@ -105,13 +88,9 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
       setValue(resultValue, resultAddress)
 
     elif q['operator'] == '>':
-      leftOpAddress = q['operand1']
-      rightOpAddress = q['operand2']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue > rightOpValue
@@ -120,13 +99,9 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
       setValue(resultValue, resultAddress)
 
     elif q['operator'] == '<=':
-      leftOpAddress = q['operand1']
-      rightOpAddress = q['operand2']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue <= rightOpValue
@@ -135,13 +110,9 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
       setValue(resultValue, resultAddress)
 
     elif q['operator'] == '>=':
-      leftOpAddress = q['operand1']
-      rightOpAddress = q['operand2']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue >= rightOpValue
@@ -150,13 +121,9 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
       setValue(resultValue, resultAddress)
 
     elif q['operator'] == '==':
-      leftOpAddress = q['operand1']
-      rightOpAddress = q['operand2']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue == rightOpValue
@@ -165,13 +132,9 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
       setValue(resultValue, resultAddress)
 
     elif q['operator'] == '!=':
-      leftOpAddress = q['operand1']
-      rightOpAddress = q['operand2']
-      resultAddress = q['resultAddress']
-
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue != rightOpValue
@@ -181,8 +144,8 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
 
     elif q['operator'] == '||':
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue or rightOpValue
@@ -192,8 +155,8 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
 
     elif q['operator'] == '&&':
       #Get value from memory
-      leftOpValue = getValue(leftOpAddress)
-      rightOpValue = getValue(rightOpAddress)
+      leftOpValue = getValue(leftOp)
+      rightOpValue = getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue and rightOpValue
@@ -204,30 +167,21 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
     # Other operators
     # Param
     elif q['operator'] == 'param':
-      leftOpAddress = q['operand1']
-      resultAddress = q['resultAddress']
 
     # Return
     elif q['operator'] == 'Return':
-      leftOpAddress = q['operand1']
-      resultAddress = q['resultAddress']
 
     # GoSub
     elif q['operator'] == 'GoSub':
-      leftOpAddress = q['operand1']
 
     # GotoF
     elif q['operator'] == 'GoToF':
-      leftOpAddress = q['operand1']
-      resultAddress = q['resultAddress']
 
     # Goto
     elif q['operator'] == 'GoTo':
-      resultAddress = q['resultAddress']
 
     # ERA
     elif q['operator'] == 'era':
-      leftOpAddress = q['operand1']
 
     # Print
     # elif q['operator'] == 'print'
@@ -240,6 +194,10 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
 
     # END
     # elif q['operator'] == 'End'
+
+    else:
+      print('Unknown operator')
+      exit(1)
 
 # Temporary functions
 # This will be implemented in memory
