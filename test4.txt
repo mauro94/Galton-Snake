@@ -1,20 +1,19 @@
-int a, var1, var3, var2;
+float var1, var2;
+float var3;
+char var4;
+string var9;
+bool var10;
 
-func void fun2(int x): {
-  if(var1 > var3 && var2 == var1) {
-    var1 = 5;
-  }
-  elseif (var1 > var3 || var2 == var1) {
-    var1 = 5;
-  }
-  elseif (var1 > var3 && var2 == var1) {
-    var1 = 5;
-  }
-  else {
-    var1 = 7;
-  }
+func float func1(int p1, float p2, bool p3): {
+  return var1;
+}
+
+func int func2(int p1, float ppp3): {
+  return p1;
 }
 
 main: {
-  call fun2(2);
+  int a[10*8];
+
+  var1 = func1(func2(1, func1(a[1], 2.0 ,true)), var3, var10);
 }
