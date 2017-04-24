@@ -1,18 +1,5 @@
-float var1, var2;
-float var3;
-string var9;
-bool var10;
-
-func float func1(int p1, float p2, bool p3): {
-  return var1;
-}
-
-func int func2(int p1, float ppp3): {
-  return p1;
-}
-
 main: {
-  int a[10*8];
+  int a[5];
 
-  var1 = func1(func2(1, func1(a[1], 2.0 ,true)), var3, var10);
+  a = [1,2,3,4,5];
 }
