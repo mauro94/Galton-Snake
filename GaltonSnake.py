@@ -194,7 +194,6 @@ constVarCount['bool'] = 80000
 constVarCount['int'] = 82000
 constVarCount['float'] = 84000
 constVarCount['string'] = 86000
-constVarCount['dataframe'] = 90000
 
 # Starting grammar
 start = 'PROGRAM'
@@ -1421,7 +1420,7 @@ yacc.yacc()
 # -------------------------- FILE IMPORTS --------------------------
 from Cube import *
 from Functions import *
-# from VirtualMachine import *
+from VirtualMachine import *
 # from Memory import *?
 
 # -------------------------- TEST --------------------------
@@ -1438,6 +1437,8 @@ if __name__ == '__main__':
       # Parse the data
       if (yacc.parse(data, tracking = True) == 'OK'):
         print(dirProc);
+      # Execute virtual machine
+      execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount)
     except EOFError:
         print(EOFError)
   else:

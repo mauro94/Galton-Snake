@@ -3,6 +3,30 @@ from GaltonSnake import *
 from VirtualMachine import *
 from Functions import *
 
+# Initial memory addresses
+initial_global_bool = 10000
+initial_global_int = 12000
+initial_global_float = 14000
+initial_global_string = 16000
+initial_global_dataframe = 20000
+
+initial_local_bool = 40000
+initial_local_int = 42000
+initial_local_float = 44000
+initial_local_string = 46000
+initial_local_dataframe = 50000
+
+initial_temp_bool = 60000
+initial_temp_int = 62000
+initial_temp_float = 64000
+initial_temp_string = 66000
+initial_temp_dataframe = 70000
+
+initial_constant_bool = 80000
+initial_constant_int = 82000
+intial_constant_float = 84000
+initial_constant_string = 86000
+
 class Memory:
   """docstring for Memory"""
   def __init__(self, name, global_variables, local_variables, temp_variables, const_variables):
@@ -41,59 +65,8 @@ class Memory:
     # Memory Stack
     self.memory_stack = []
 
-  # Get type based on address
-  def getType (address, scope):
-    if scope == 'global':
-      if between(address, initial_global_bool, initial_global_int):
-        return 'bool'
-      elif between(address, initial_global_int, initial_global_float):
-        return 'int'
-      elif between(address, initial_global_float, initial_global_string):
-        return 'float'
-      elif between(address, initial_global_string, initial_global_dataframe):
-        return 'string'
-      elif between(address, initial_global_dataframe, initial_local_bool):
-        return 'dataframe'
-    elif scope == 'local':
-      if between(address, initial_local_bool, initial_local_int):
-        return 'bool'
-      elif between(address, initial_local_int, initial_local_float):
-        return 'int'
-      elif between(address, initial_local_float, initial_local_string):
-        return 'float'
-      elif between(address, initial_local_string, initial_local_dataframe):
-        return 'string'
-      elif between(address, initial_local_dataframe, initial_temp_bool):
-        return 'dataframe'
-    elif scope == 'temp':
-      if between(address, initial_temp_bool, initial_temp_int):
-        return 'bool'
-      elif between(address, initial_temp_int, initial_temp_float):
-        return 'int'
-      elif between(address, initial_temp_float, initial_temp_string):
-        return 'float'
-      elif between(address, initial_temp_string, initial_temp_dataframe):
-        return 'string'
-      elif between(address, initial_temp_dataframe, initial_temp_bool):
-        return 'dataframe'
-    # TODO: check if necessary to get constant type
-
-  # Get scope based on address
-  def getScope (address):
-    if between(address, initial_global_bool, initial_local_bool):
-      return 'global'
-    elif between(address, initial_local_bool, initial_temp_bool):
-      return 'local'
-    elif between(address, initial_temp_bool, initial_constant_bool):
-      return 'temp'
-    # TODO: define a memory limit
-    elif between(address, initial_constant_bool, mem_limit):
-      return 'constant'
-    else:
-      print('Address non existent')
-
   # Get value
-  def getValue(address):
+  def getValue(self, address):
     scope = getScope(address)
 
     if scope == 'global':
@@ -142,7 +115,7 @@ class Memory:
     # elif scope == 'constant':
 
   #Set value
-  def setValue(value, address):
+  def setValue(self, value, address):
     scope = getScope(address)
 
     if scope == 'global':
@@ -206,6 +179,58 @@ class Memory:
 
     # elif scope == 'constant'
 
-  # Function to check values between
-  def between (value, low, high):
-    return (low <= value < high)
+# Memory helper functions
+# Get type based on address
+def getType (address, scope):
+  if scope == 'global':
+    if between(address, initial_global_bool, initial_global_int):
+      return 'bool'
+    elif between(address, initial_global_int, initial_global_float):
+      return 'int'
+    elif between(address, initial_global_float, initial_global_string):
+      return 'float'
+    elif between(address, initial_global_string, initial_global_dataframe):
+      return 'string'
+    elif between(address, initial_global_dataframe, initial_local_bool):
+      return 'dataframe'
+  elif scope == 'local':
+    if between(address, initial_local_bool, initial_local_int):
+      return 'bool'
+    elif between(address, initial_local_int, initial_local_float):
+      return 'int'
+    elif between(address, initial_local_float, initial_local_string):
+      return 'float'
+    elif between(address, initial_local_string, initial_local_dataframe):
+      return 'string'
+    elif between(address, initial_local_dataframe, initial_temp_bool):
+      return 'dataframe'
+  elif scope == 'temp':
+    if between(address, initial_temp_bool, initial_temp_int):
+      return 'bool'
+    elif between(address, initial_temp_int, initial_temp_float):
+      return 'int'
+    elif between(address, initial_temp_float, initial_temp_string):
+      return 'float'
+    elif between(address, initial_temp_string, initial_temp_dataframe):
+      return 'string'
+    elif between(address, initial_temp_dataframe, initial_temp_bool):
+      return 'dataframe'
+  # TODO: check if necessary to get constant type
+
+# Get scope based on address
+def getScope (address):
+  if between(address, initial_global_bool, initial_local_bool):
+    return 'global'
+  elif between(address, initial_local_bool, initial_temp_bool):
+    return 'local'
+  elif between(address, initial_temp_bool, initial_constant_bool):
+    return 'temp'
+  # TODO: define a memory limit
+  elif between(address, initial_constant_bool, 100000):
+    return 'constant'
+  else:
+    print('Address non existent')
+
+# Function to check values between
+def between (value, low, high):
+  return (low <= value < high)

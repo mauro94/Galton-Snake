@@ -3,8 +3,12 @@ from GaltonSnake import *
 from Memory import *
 import csv
 
-def virtualMachine (functions, quadruples, global_variables, local_variables, temp_variables, const_variables):
-  # Memory stuff
+def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount):
+  # For testing purposes
+  print 'Virtual Machine -----------------------------'
+
+  # Memory map
+  memory = Memory('memory', globalVarCount, localVarCount, tempVarCount, constVarCount)
 
   # Quadruple counter
   quad_count = 0
@@ -17,57 +21,59 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
     # Get values of operands and result address
     leftOp = q['operand1']
     rightOp = q['operand2']
-    resultAddress = q['resultAddress']
+    resultAddress = q['result']
+
+    print (leftOp, rightOp, resultAddress)
 
     # Arithmetic
     # Addition
     if q['operator'] == '+':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue + rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     # Substraction
     elif q['operator'] == '-':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue - rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     # Multiplication
     elif q['operator'] == '*':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue * rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     # Division
     elif q['operator'] == '/':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       if rightOpValue != 0:
         resultValue = leftOpValue / rightOpValue
 
         # Store value in memory
-        setValue(resultValue, resultAddress)
+        memory.setValue(resultValue, resultAddress)
 
       else:
         print('Division by 0')
@@ -76,106 +82,106 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
     # Assignment
     elif q['operator'] == '=':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
+      leftOpValue = memory.getValue(leftOp)
 
       # Store value in memory
-      setValue(leftOpValue, resultAddress)
+      memory.setValue(leftOpValue, resultAddress)
 
     # Comparison
     # <, >, <=, >=, ==, !=, &&, ||
     elif q['operator'] == '<':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue < rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     elif q['operator'] == '>':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue > rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     elif q['operator'] == '<=':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue <= rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     elif q['operator'] == '>=':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue >= rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     elif q['operator'] == '==':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue == rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     elif q['operator'] == '!=':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue != rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     elif q['operator'] == '||':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue or rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     elif q['operator'] == '&&':
       # Get value from memory
-      leftOpValue = getValue(leftOp)
-      rightOpValue = getValue(rightOp)
+      leftOpValue = memory.getValue(leftOp)
+      rightOpValue = memory.getValue(rightOp)
 
       # Perform operation
       resultValue = leftOpValue and rightOpValue
 
       # Store value in memory
-      setValue(resultValue, resultAddress)
+      memory.setValue(resultValue, resultAddress)
 
     #Arrays
     elif q['operator'] == 'Ver':
-      value = getValue(leftOp)
-      lower_lim = getValue(rightOp)
-      upper_lim = getValue(resultAddress)
+      value = memory.getValue(leftOp)
+      lower_lim = memory.getValue(rightOp)
+      upper_lim = memory.getValue(resultAddress)
 
       if between(value, lower_lim, upper_lim + 1):
         return True
@@ -185,7 +191,7 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
 
     # Printing
     elif q['operator'] == 'print':
-      leftOpValue = getValue(leftOp)
+      leftOpValue = memory.getValue(leftOp)
 
       print(leftOpValue)
 
@@ -206,7 +212,7 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
     # GotoF
     elif q['operator'] == 'GoToF':
       # Get conditional result
-      result = getValue(leftOp)
+      result = memory.getValue(leftOp)
       # Get target quadruple
       target = resultAddress
       # Modify quadruple counter to return to target quad
@@ -228,7 +234,7 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
     # Read
     elif q['operator'] == 'read':
       # Get filename
-      filename = getValue(resultAddress)
+      filename = memory.getValue(resultAddress)
 
       # Read csv file
       with open(filename, 'rb') as csvfile:
@@ -250,12 +256,3 @@ def virtualMachine (functions, quadruples, global_variables, local_variables, te
       exit(1)
 
     quad_count += 1
-
-# Temporary functions
-# This will be implemented in memory
-def getValue(address):
-  print(address)
-
-def setValue(value, address):
-  print(value)
-  print(address)
