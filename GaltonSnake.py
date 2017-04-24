@@ -212,7 +212,7 @@ def p_ASSIGNMENT(p):
     '''ASSIGNMENT : id SA_FIND_ID SA_EXP_1_ID equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
                   | VAR_ARR equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
                   | VAR_ARR equal SA_EXP_ADD_OP CALLFUNC SA_EXP_10 
-                  | id equal SA_EXP_ADD_OP lSqBr SA_ARR_4 ASSIGNMENT_ARR rSqBr semi_colon '''
+                  | VAR_ARR equal SA_EXP_ADD_OP lSqBr SA_ARR_4 ASSIGNMENT_ARR rSqBr semi_colon '''
 
 def p_ASSIGNMENT_ARR(p):
     '''ASSIGNMENT_ARR : EXP SA_ARR_5 coma ASSIGNMENT_ARR
