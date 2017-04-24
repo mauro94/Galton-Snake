@@ -158,6 +158,7 @@ types = []              # Types stack
 operators = []          # Operators stack
 quadruples = []         # quadruples list
 jumps = []              # jumps stack
+elseif_jumps = []       # elseif jumps stack
 dimensions = []         # dimensions stack
 current_dim = 0         # variable for current dimension
 cont = 0                # quadruple counter  
@@ -252,11 +253,11 @@ def p_CALLFUNC_PARAMS(p):
 
 def p_CONDITION(p):
     '''CONDITION : if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK SA_COND_2
-                 | if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK SA_COND_2 elseif CONDITION_ELIF else SA_COND_3 BLOCK SA_COND_2
+                 | if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK SA_COND_2 elseif SA_COND_4 CONDITION_ELIF else SA_COND_3 BLOCK SA_COND_5
                  | if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK else SA_COND_3 BLOCK SA_COND_2'''
 
 def p_CONDITION_ELIF(p):
-    '''CONDITION_ELIF : lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK SA_COND_2 elseif CONDITION_ELIF
+    '''CONDITION_ELIF : lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK SA_COND_2 elseif SA_COND_4 CONDITION_ELIF
                       | lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK'''
 
 def p_CORR_HEADERS(p):
@@ -1049,7 +1050,7 @@ def p_SA_COND_1(p):
     # get current operand
     result = stackPop(operands)
     # create quadruple
-    newQuadruple(quadruples, 'GoToF', result, None, 0)
+    newQuadruple(quadruples, 'GoToF', result, None, -1)
     # update quadruple counter
     cont += 1
     # push quadruple counter to jumps
@@ -1081,6 +1082,31 @@ def p_SA_COND_3(p):
   stackPush(jumps, cont-1)
   # fill blank space
   quadruples[jump]['result'] = cont
+
+
+# Else statement
+# generate final quadruple for if statement
+def p_SA_COND_4(p):
+  '''SA_COND_4 : empty'''
+  # global variables
+  global cont
+  # Cretae quadruple
+  newQuadruple(quadruples, 'GoTo', None, None, -1)
+  # update quadruple counter
+  cont += 1
+  # push cont to jumps
+  stackPush(elseif_jumps, cont-1)
+
+
+# Else statement
+# generate final quadruple for if statement
+def p_SA_COND_5(p):
+  '''SA_COND_5 : empty'''
+  while len(elseif_jumps) > 0:
+    # get top jump
+    jump = stackPop(elseif_jumps)
+    # fill blank space
+    quadruples[jump]['result'] = cont
 
 
 # --------- EXTRA GRAMMARS / LOOP QUADRUPPLES ---------
