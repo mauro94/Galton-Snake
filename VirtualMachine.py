@@ -3,12 +3,13 @@ from GaltonSnake import *
 from Memory import *
 import csv
 
-def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount):
+def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constants):
   # For testing purposes
   print 'Virtual Machine -----------------------------'
 
   # Memory map
   memory = Memory('memory', globalVarCount, localVarCount, tempVarCount, constVarCount)
+  memory.initialize_constants(constants)
 
   # Quadruple counter
   quad_count = 0
@@ -23,7 +24,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     rightOp = q['operand2']
     resultAddress = q['result']
 
-    print (leftOp, rightOp, resultAddress)
+    print (q['operator'], leftOp, rightOp, resultAddress)
 
     # Arithmetic
     # Addition
@@ -191,9 +192,9 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
     # Printing
     elif q['operator'] == 'print':
-      leftOpValue = memory.getValue(leftOp)
+      value = memory.getValue(resultAddress)
 
-      print(leftOpValue)
+      print(value)
 
     # Other operators
     # Param
@@ -216,7 +217,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Get target quadruple
       target = resultAddress
       # Modify quadruple counter to return to target quad
-      if result:
+      if not result:
         quad_count = target - 1
 
     # Goto
@@ -249,7 +250,9 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     # elif q['operator'] == 'EndProc':
 
     # END
-    # elif q['operator'] == 'End'
+    elif q['operator'] == 'end':
+      # TODO: check if anything else is needed here
+      exit(1)
 
     else:
       print('Unknown operator')
