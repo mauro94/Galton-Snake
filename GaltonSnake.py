@@ -165,6 +165,8 @@ paramCount = 0          # parameter counter
 varCounter = 0          # local variable counter
 callFunc_scopes = []    # stack of id of function call
 pointers = []           # pointer stack
+array_counter = 0       # value counter array
+array_id = ''           # array id
 
 # Memory counters
 # 2,000 slots per block, dataframes 10,000 
@@ -210,11 +212,11 @@ def p_ASSIGNMENT(p):
     '''ASSIGNMENT : id SA_FIND_ID SA_EXP_1_ID equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
                   | VAR_ARR equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
                   | VAR_ARR equal SA_EXP_ADD_OP CALLFUNC SA_EXP_10 
-                  | VAR_ARR equal SA_EXP_ADD_OP lSqBr ASSIGNMENT_ARR rSqBr semi_colon '''
+                  | id equal SA_EXP_ADD_OP lSqBr SA_ARR_4 ASSIGNMENT_ARR rSqBr semi_colon '''
 
 def p_ASSIGNMENT_ARR(p):
-    '''ASSIGNMENT_ARR : EXP coma ASSIGNMENT_ARR
-                      | EXP'''
+    '''ASSIGNMENT_ARR : EXP SA_ARR_5 coma ASSIGNMENT_ARR
+                      | EXP SA_ARR_5'''
 
 def p_BIND_COLS(p):
     '''BIND_COLS : cbind lPar id SA_FIND_ID coma ACCESS_COL rPar semi_colon '''
@@ -280,15 +282,6 @@ def p_EXP(p):
     '''EXP : TERM SA_EXP_8
            | TERM SA_EXP_8 plus SA_EXP_ADD_OP EXP 
            | TERM SA_EXP_8 minus SA_EXP_ADD_OP EXP '''
-    # check lenght of p
-    if len(p) == 3:
-      p[0] = p[1]
-    else:
-      # check add or minus
-      if p[3] == '+': 
-        p[0] = p[1] + p[5]
-      else:
-        p[0] = p[1] - p[5]
 
 def p_EXPRESSION(p):
     '''EXPRESSION : EXP SA_EXP_7
@@ -307,15 +300,6 @@ def p_FACTOR(p):
               | plus SA_NEW_SIGN VAR_CTE 
               | minus SA_NEW_SIGN VAR_CTE 
               | VAR_CTE '''
-    # check length of p
-    if len(p) == 2:
-      p[0] = p[1]
-    else:
-      # check sign
-      if p[1] == '-': 
-        p[0] = -1 * p[3]
-      else:
-        p[0] = p[3]
 
 def p_FUNCTION(p):
     '''FUNCTION : func void SA_VOID_FUNCTION id SA_NEW_FUNCTION lPar PARAMETERS rPar colon BLOCK SA_END_FUNCTION
@@ -396,15 +380,6 @@ def p_TERM(p):
     '''TERM : FACTOR SA_EXP_9
             | FACTOR SA_EXP_9 times SA_EXP_ADD_OP TERM 
             | FACTOR SA_EXP_9 divide SA_EXP_ADD_OP TERM '''
-    # check lenght of p
-    if len(p) == 3:
-      p[0] = p[1]
-    else:
-      # check add or minus
-      if p[3] == '*': 
-        p[0] = p[1] * p[5]
-      else:
-        p[0] = p[1] / p[5]
 
 def p_TYPE(p):
     '''TYPE : int SA_TYPE
@@ -425,8 +400,6 @@ def p_VAR_CTE(p):
                | VAR_ARR 
                | null SA_CREATE_CONST SA_EXP_1_CTE
                | CALLFUNC_EXP'''
-    # get value
-    p[0] = p[1]
 
 def p_VARS(p):
     '''VARS : TYPE VARS_ID semi_colon '''
@@ -434,8 +407,8 @@ def p_VARS(p):
 def p_VARS_ID(p):
     '''VARS_ID : id SA_CREATE_VAR coma VARS_ID
                | id SA_CREATE_VAR 
-               | id SA_CREATE_VAR lSqBr EXP SA_ARR_1 rSqBr coma VARS_ID
-               | id SA_CREATE_VAR lSqBr EXP SA_ARR_1 rSqBr'''
+               | id SA_CREATE_VAR lSqBr cte_int SA_ARR_1 rSqBr coma VARS_ID
+               | id SA_CREATE_VAR lSqBr cte_int SA_ARR_1 rSqBr'''
 
 # Empty grammar
 def p_empty(p):
@@ -814,7 +787,6 @@ def p_SA_EXP_1_ID(p):
   '''SA_EXP_1_ID : empty'''
   # get id
   varID = p[-2]
-  print varID
   # push id name to operands
   stackPush(operands, varID)
   # check if id is in current_scope or global
@@ -1176,7 +1148,6 @@ def p_SA_CALLFUNC_2(p):
   '''SA_CALLFUNC_2 : empty'''
   # global variables
   global cont, parameterCount, pointers, callFunc_scopes
-  print pointers
   # function id
   funcID = p[-3]
   # update current func call id
@@ -1197,7 +1168,6 @@ def p_SA_CALLFUNC_3(p):
   '''SA_CALLFUNC_3 : empty'''
   # global variables
   global cont
-  print callFunc_scopes
   # get operand
   argument = stackPop(operands)
   # get type
@@ -1214,8 +1184,6 @@ def p_SA_CALLFUNC_3(p):
     cont += 1
   else:
     # print error message
-    print argumentType, ' ', functionDirectory[callFunc_scope]['signature'][pointer]
-    print constantTable
     print("Result type mismatch")
     exit(1)
 
@@ -1323,9 +1291,11 @@ def p_SA_RET(p):
 def p_SA_ARR_1(p):
   '''SA_ARR_1 : empty'''
   # Global Variables
-  global cont
+  global cont, array_id
   # get var id
   varID = p[-4]
+  # set current array id
+  array_id = varID
   # get size of array
   size =  p[-1]
   # agregar dimension a variable
@@ -1401,6 +1371,42 @@ def p_SA_ARR_3(p):
   stackPush(types, t)
   # update tempVar count
   tempVarCount[getTypeString(t)] += 1
+
+
+# Array assignment started a = [ ]
+# Prepare assignment
+def p_SA_ARR_4(p):
+  '''SA_ARR_4 : empty'''
+  # Global Variables
+  global array_counter
+  # reset array size
+  array_counter = 0
+
+
+# Array values are being assigned
+# Create array assignment quadruples
+def p_SA_ARR_5(p):
+  '''SA_ARR_5 : empty'''
+  # Global Variables
+  global array_counter, cont
+  # get base direction
+  dir = functionDirectory[current_scope]['varTable'][array_id]['address']
+  # get array count
+  array_size = functionDirectory[current_scope]['varTable'][array_id]['dimension'][current_dim-1]['sup'] - 1
+  # validate limit of array size i not exceeded
+  if array_counter < array_size:
+    # get operand
+    op = stackPop(operands) 
+    # create quadruple
+    newQuadruple(quadruples, '=', op, None, dir+array_counter)
+    # update quadruple counter
+    cont += 1
+    # update array counter
+    array_counter += 1
+
+
+
+  
 
 
 # --------- EXTRA GRAMMARS / PRINT QUADRUPPLES ---------
