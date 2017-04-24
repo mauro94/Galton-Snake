@@ -787,14 +787,15 @@ def p_SA_EXP_1_ID(p):
   '''SA_EXP_1_ID : empty'''
   # get id
   varID = p[-2]
-  # push id name to operands
-  stackPush(operands, varID)
   # check if id is in current_scope or global
   if functionDirectory[current_scope]['varTable'].has_key(varID):
     t = functionDirectory[current_scope]['varTable'][varID]['type']
+    d = functionDirectory[current_scope]['varTable'][varID]['address']
   else:
     t = functionDirectory['global']['varTable'][varID]['type']
-  # push
+    d = functionDirectory['global']['varTable'][varID]['address']
+  # Push
+  stackPush(operands, d)
   stackPush(types, t)
 
 
@@ -804,13 +805,15 @@ def p_SA_EXP_1_CTE(p):
   '''SA_EXP_1_CTE : empty'''
   # get id
   varID = p[-2]
-  # push id name to operands
-  stackPush(operands, varID)
+  # Check if exists
   if constantTable.has_key(str(varID)):
     t = constantTable[str(varID)]['type']
+    d = constantTable[str(varID)]['address']
   elif constantTable.has_key('-' + str(varID)):
     t = constantTable[str('-' + varID)]['type']
-  # push
+    d = constantTable[str(varID)]['address']
+  # Push
+  stackPush(operands, d)
   stackPush(types, t)
 
 
@@ -1439,10 +1442,17 @@ def p_SA_ARR_5(p):
 # Create print quadruple
 def p_SA_PRINT_DATA(p):
   '''SA_PRINT_DATA : empty'''
+  # Globals
+  global cont
   # get id
   varID = p[-2]
-  # create quadruple
-  newQuadruple(quadruples, 'print', None, None, varID)
+  # Find address in global / local / constant table
+  if functionDirectory[current_scope]['varTable'].has_key(varID):
+    address = functionDirectory[current_scope]['varTable'][varID]['address']
+  elif functionDirectory['global']['varTable'].has_key(varID):
+    address = functionDirectory['global']['varTable'][varID]['address']
+  # Create quadruple
+  newQuadruple(quadruples, 'print', None, None, address)
   # update quadruple counter
   cont += 1
 
@@ -1468,9 +1478,10 @@ if __name__ == '__main__':
       f.close()
       # Parse the data
       if (yacc.parse(data, tracking = True) == 'OK'):
-        print(dirProc);
+        print(dirProc)
       # Execute virtual machine
-      execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount)
+      print globalVarCount, localVarCount, tempVarCount, constVarCount
+      execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable)
     except EOFError:
         print(EOFError)
   else:

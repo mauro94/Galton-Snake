@@ -1,0 +1,12 @@
+float a, b;
+
+main: {
+  b = 6.0;
+  a = 2.0;
+
+  if (a < b) {
+    a = b / a;
+  }
+
+  print a;
+}

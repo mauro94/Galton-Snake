@@ -24,7 +24,7 @@ initial_temp_dataframe = 70000
 
 initial_constant_bool = 80000
 initial_constant_int = 82000
-intial_constant_float = 84000
+initial_constant_float = 84000
 initial_constant_string = 86000
 
 class Memory:
@@ -35,31 +35,31 @@ class Memory:
 
     # Creating lists with the amount of variables needed to be stored
     # Global variables
-    self.global_bools      = range(global_variables['bool'] + 1)
-    self.global_ints       = range(global_variables['int'] + 1)
-    self.global_floats     = range(global_variables['float'] + 1)
-    self.global_strings    = range(global_variables['string'] + 1)
+    self.global_bools      = range(global_variables['bool'] - initial_global_bool)
+    self.global_ints       = range(global_variables['int'] - initial_global_int)
+    self.global_floats     = range(global_variables['float'] - initial_global_float)
+    self.global_strings    = range(global_variables['string'] - initial_global_string)
     # self.global_dataframes = range(global_variables['dataframe'] + 1)
 
     # Local variables
-    self.local_bools      = range(local_variables['bool'] + 1)
-    self.local_ints       = range(local_variables['int'] + 1)
-    self.local_floats     = range(local_variables['float'] + 1)
-    self.local_strings    = range(local_variables['string'] + 1)
+    self.local_bools      = range(local_variables['bool'] - initial_local_bool)
+    self.local_ints       = range(local_variables['int'] - initial_local_int)
+    self.local_floats     = range(local_variables['float'] - initial_local_float)
+    self.local_strings    = range(local_variables['string'] - initial_local_string)
     # self.local_dataframes = range(local_variables['dataframe'] + 1)    
 
     # Temporary variables
-    self.temp_bools      = range(temp_variables['bool'] + 1)
-    self.temp_ints       = range(temp_variables['int'] + 1)
-    self.temp_floats     = range(temp_variables['float'] + 1)
-    self.temp_strings    = range(temp_variables['string'] + 1)
-    # self.temp_dataframes = range(temp_variables['dataframe'] + 1)
+    self.temp_bools      = range(temp_variables['bool'] - initial_temp_bool)
+    self.temp_ints       = range(temp_variables['int'] - initial_temp_int)
+    self.temp_floats     = range(temp_variables['float'] - initial_temp_float)
+    self.temp_strings    = range(temp_variables['string'] - initial_temp_string)
+    # self.temp_dataframes = range(temp_variables['dataframe'])
     
     # Constants
-    self.const_bools      = range(const_variables['bool'] + 1)
-    self.const_ints       = range(const_variables['int'] + 1)
-    self.const_floats     = range(const_variables['float'] + 1)
-    self.const_strings    = range(const_variables['string'] + 1)
+    self.const_bools      = range(const_variables['bool'] - initial_constant_bool)
+    self.const_ints       = range(const_variables['int'] - initial_constant_int)
+    self.const_floats     = range(const_variables['float'] - initial_constant_float)
+    self.const_strings    = range(const_variables['string'] - initial_constant_string)
     # self.const_dataframes = range(const_variables['dataframe'] + 1)
 
     # Memory Stack
@@ -111,8 +111,20 @@ class Memory:
         value = self.temp_strings[address - initial_temp_string]
       # Return
       return value
-
-    # elif scope == 'constant':
+    elif scope == 'constant':
+      # Get type
+      varType = getType(address, scope)
+      # Get list[address - initial size]
+      if varType == 'bool':
+        value = self.const_bools[address - initial_constant_bool]
+      elif varType == 'int':
+        value = self.const_ints[address - initial_constant_int]
+      elif varType == 'float':
+        value = self.const_floats[address - initial_constant_float]
+      elif varType == 'string':
+        value = self.const_strings[address - initial_constant_string]
+      # Return
+      return value
 
   #Set value
   def setValue(self, value, address):
@@ -123,23 +135,19 @@ class Memory:
       varType = getType(address, scope)
       # Get list[address - initial size]
       if varType == 'bool':
-        # Get type
-        varType = getType(address, scope)
-        # Get list[address - initial size]
-        if varType == 'bool':
-          self.global_bools[address - initial_global_bool] = value
-          return True
-        elif varType == 'int':
-          self.global_ints[address - initial_global_int] = value
-          return True
-        elif varType == 'float':
-          self.global_floats[address - initial_global_float] = value
-          return True
-        elif varType == 'string':
-          self.global_strings[address - initial_global_string] = value
-          return True
-        else:
-          return False
+        self.global_bools[address - initial_global_bool] = value
+        return True
+      elif varType == 'int':
+        self.global_ints[address - initial_global_int] = value
+        return True
+      elif varType == 'float':
+        self.global_floats[address - initial_global_float] = value
+        return True
+      elif varType == 'string':
+        self.global_strings[address - initial_global_string] = value
+        return True
+      else:
+        return False
     elif scope == 'local':
       # Get type
         varType = getType(address, scope)
@@ -176,8 +184,21 @@ class Memory:
           return True
         else:
           return False
+  
+  # Initialize constants in memory
+  def initialize_constants(self, constants):
+    # Iterate all constants
+    for key, value in constants.items():
+      if value['type'] == 1:
+        self.const_bools[value['address'] - initial_constant_bool] = value['val']
+      elif value['type'] == 2:
+        self.const_ints[value['address'] - initial_constant_int] = value['val']
+      elif value['type'] == 3:
+        self.const_floats[value['address'] - initial_constant_float] = value['val']
+      elif value['type'] == 4:
+        self.const_strings[value['address'] - initial_constant_string] = value['val']
 
-    # elif scope == 'constant'
+    # print self.const_ints
 
 # Memory helper functions
 # Get type based on address
@@ -215,7 +236,15 @@ def getType (address, scope):
       return 'string'
     elif between(address, initial_temp_dataframe, initial_temp_bool):
       return 'dataframe'
-  # TODO: check if necessary to get constant type
+  elif scope == 'constant':
+    if between(address, initial_constant_bool, initial_constant_int):
+      return 'bool'
+    elif between(address, initial_constant_int, initial_constant_float):
+      return 'int'
+    elif between(address, initial_constant_float, initial_constant_string):
+      return 'float'
+    elif between(address, initial_constant_string, 100000):
+      return 'string'
 
 # Get scope based on address
 def getScope (address):
