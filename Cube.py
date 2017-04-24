@@ -11,12 +11,10 @@ datatypeCode = {
   'intArray' : 22,
   'float' : 3,
   'floatArray' : 33,
-  'char' : 4,
-  'charArray' : 44,
-  'string' : 5,
-  'stringArray' : 55,
-  'dataframe' : 6,
-  'dataframeArray' : 66
+  'string' : 4,
+  'stringArray' : 44,
+  'dataframe' : 5,
+  'dataframeArray' : 55
 }
 
 # Operation code
@@ -43,107 +41,74 @@ cube = {}
 cube['bool=bool'] = datatypeCode['bool']
 cube['int=int'] = datatypeCode['int']
 cube['int=float'] = datatypeCode['int']
-cube['int=char'] = datatypeCode['int']
 cube['float=float'] = datatypeCode['float']
 cube['float=int'] = datatypeCode['float']
-cube['char=char'] = datatypeCode['char']
-cube['char=int'] = datatypeCode['char']
 cube['string=string'] = datatypeCode['string']
 cube['dataframe=dataframe'] = datatypeCode['dataframe']
 
 # Sum
 cube['int+int'] = datatypeCode['int']
 cube['int+float'] = datatypeCode['float']
-cube['int+char'] = datatypeCode['int']
 cube['float+int'] = datatypeCode['float']
 cube['float+float'] = datatypeCode['float']
-cube['char+char'] = datatypeCode['int']
-cube['char+int'] = datatypeCode['int']
 cube['string+string'] = datatypeCode['string']
 
 # Substraction
 cube['int-int'] = datatypeCode['int']
 cube['int-float'] = datatypeCode['float']
-cube['int-char'] = datatypeCode['int']
 cube['float-int'] = datatypeCode['float']
 cube['float-float'] = datatypeCode['float']
-cube['char-char'] = datatypeCode['int']
-cube['char-int'] = datatypeCode['int']
 
 # Multiplication
 cube['int*int'] = datatypeCode['int']
 cube['int*float'] = datatypeCode['float']
-cube['int*char'] = datatypeCode['int']
 cube['float*int'] = datatypeCode['float']
 cube['float*float'] = datatypeCode['float']
-cube['char*char'] = datatypeCode['int']
-cube['char*int'] = datatypeCode['int']
 
 # Divison
 cube['int/int'] = datatypeCode['int']
 cube['int/float'] = datatypeCode['float']
-cube['int/char'] = datatypeCode['int']
 cube['float/int'] = datatypeCode['float']
 cube['float/float'] = datatypeCode['float']
-cube['char/char'] = datatypeCode['int']
-cube['char/int'] = datatypeCode['int']
 
 # Less than
 cube['int<int'] = datatypeCode['bool']
 cube['int<float'] = datatypeCode['bool']
-cube['int<char'] = datatypeCode['bool']
 cube['float<int'] = datatypeCode['bool']
 cube['float<float'] = datatypeCode['bool']
-cube['char<char'] = datatypeCode['bool']
-cube['char<int'] = datatypeCode['bool']
 
 # Greater than
 cube['int>int'] = datatypeCode['bool']
 cube['int>float'] = datatypeCode['bool']
-cube['int>char'] = datatypeCode['bool']
 cube['float>int'] = datatypeCode['bool']
 cube['float>float'] = datatypeCode['bool']
-cube['char>char'] = datatypeCode['bool']
-cube['char>int'] = datatypeCode['bool']
 
 # Less than/equal
 cube['int<=int'] = datatypeCode['bool']
 cube['int<=float'] = datatypeCode['bool']
-cube['int<=char'] = datatypeCode['int']
 cube['float<=int'] = datatypeCode['bool']
 cube['float<=float'] = datatypeCode['bool']
-cube['char<=char'] = datatypeCode['bool']
-cube['char<=int'] = datatypeCode['bool']
 
 # Greater than/equal
 cube['int>=int'] = datatypeCode['bool']
 cube['int>=float'] = datatypeCode['bool']
-cube['int>=char'] = datatypeCode['bool']
 cube['float>=int'] = datatypeCode['bool']
 cube['float>=float'] = datatypeCode['bool']
-cube['char>=char'] = datatypeCode['bool']
-cube['char>=int'] = datatypeCode['bool']
 
 # Equal
 cube['bool==bool'] = datatypeCode['bool']
 cube['int==int'] = datatypeCode['bool']
 cube['int==float'] = datatypeCode['bool']
-cube['int==char'] = datatypeCode['bool']
 cube['float==int'] = datatypeCode['bool']
 cube['float==float'] = datatypeCode['bool']
-cube['char==char'] = datatypeCode['bool']
-cube['char==int'] = datatypeCode['bool']
 cube['dataframe==dataframe'] = datatypeCode['bool']
 
 # Not equal
 cube['bool!=bool'] = datatypeCode['bool']
 cube['int!=int'] = datatypeCode['bool']
 cube['int!=float'] = datatypeCode['bool']
-cube['int!=char'] = datatypeCode['bool']
 cube['float!=int'] = datatypeCode['bool']
 cube['float!=float'] = datatypeCode['bool']
-cube['char!=char'] = datatypeCode['bool']
-cube['char!=int'] = datatypeCode['bool']
 cube['dataframe!=dataframe'] = datatypeCode['bool']
 
 # And
@@ -165,17 +130,13 @@ def getTypeString (type):
     return 'float'
   elif type == 33: 
     return 'floatArray'
-  elif type == 4:
-    return 'char'
-  elif type == 44: 
-    return 'charArray'
-  elif type == 5: 
+  elif type == 4: 
     return 'string'
-  elif type == 55: 
+  elif type == 44: 
     return 'stringArray'
-  elif type == 6:
+  elif type == 5:
     return 'dataframe'
-  elif type == 66: 
+  elif type == 55: 
     return 'dataframeArray'
 
 def getTypeCode (type):
@@ -191,10 +152,6 @@ def getTypeCode (type):
     return datatypeCode['float']
   elif type == 'floatArray': 
     return datatypeCode['floatArray']
-  elif type == 'char':
-    return datatypeCode['char']
-  elif type == 'charArray': 
-    return datatypeCode['charArray']
   elif type == 'string': 
     return datatypeCode['string']
   elif type == 'stringArray': 

@@ -38,7 +38,6 @@ reserved = {
    'main' : 'main',
    'int' : 'int',
    'float' : 'float',
-   'char' : 'char',
    'string' : 'string',
    'bool' : 'bool',
    'null' : 'null',
@@ -58,8 +57,7 @@ tokens = [
     'relop_or', 
     'cte_string', 
     'cte_float', 
-    'cte_int',
-    'cte_char', 
+    'cte_int', 
     'file',
     'id',
     'colon',
@@ -113,10 +111,6 @@ def t_cte_string(t):
 def t_cte_float(t):
     r'[-+]?[0-9]+\.[0-9]+([Ee][\+-]?[0-9+])?'
     t.value = float(t.value)
-    return t
-
-def t_cte_char(t):
-    r'\'.*\''
     return t
 
 def t_cte_int(t):
@@ -178,32 +172,28 @@ globalVarCount = {}
 globalVarCount['bool'] = 10000
 globalVarCount['int'] = 12000
 globalVarCount['float'] = 14000
-globalVarCount['char'] = 16000
-globalVarCount['string'] = 28000
-globalVarCount['dataframe'] = 30000
+globalVarCount['string'] = 16000
+globalVarCount['dataframe'] = 20000
 
 localVarCount = {}
 localVarCount['bool'] = 40000
 localVarCount['int'] = 42000
 localVarCount['float'] = 44000
-localVarCount['char'] = 46000
-localVarCount['string'] = 48000
+localVarCount['string'] = 46000
 localVarCount['dataframe'] = 50000
 
 tempVarCount = {}
 tempVarCount['bool'] = 60000
 tempVarCount['int'] = 62000
 tempVarCount['float'] = 64000
-tempVarCount['char'] = 66000
-tempVarCount['string'] = 68000
+tempVarCount['string'] = 66000
 tempVarCount['dataframe'] = 70000
 
 constVarCount = {}
 constVarCount['bool'] = 80000
 constVarCount['int'] = 82000
 constVarCount['float'] = 84000
-constVarCount['char'] = 86000
-constVarCount['string'] = 88000
+constVarCount['string'] = 86000
 constVarCount['dataframe'] = 90000
 
 # Starting grammar
@@ -419,7 +409,6 @@ def p_TERM(p):
 def p_TYPE(p):
     '''TYPE : int SA_TYPE
             | float SA_TYPE
-            | char SA_TYPE
             | string SA_TYPE
             | bool SA_TYPE'''
 
@@ -430,7 +419,6 @@ def p_VAR_CTE(p):
     '''VAR_CTE : id SA_FIND_ID SA_EXP_1_ID
                | cte_int SA_CREATE_CONST SA_EXP_1_CTE
                | cte_float SA_CREATE_CONST SA_EXP_1_CTE
-               | cte_char SA_CREATE_CONST SA_EXP_1_CTE
                | cte_string SA_CREATE_CONST SA_EXP_1_CTE
                | true SA_CREATE_CONST SA_EXP_1_CTE 
                | false SA_CREATE_CONST SA_EXP_1_CTE
@@ -541,18 +529,12 @@ def p_SA_CREATE_CONST(p):
         constant = str(cte)
       #define type code
       t = 3
-    # char
-    elif isinstance(constant, str) and len(str(constant)) == 3:
+    # string
+    elif isinstance(constant, str):
       # define constant
       cte = str(constant)
       #define type code
       t = 4
-    # string
-    else:
-      #define type code
-      t = 5
-      # define constant
-      cte = str(constant)
     #create constant
     constantTable[str(constant)] = {'type': t, 'address': constVarCount[getTypeString(t)], 'val': cte}
     #increase constant variable counter

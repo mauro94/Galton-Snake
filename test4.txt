@@ -1,6 +1,5 @@
 float var1, var2;
 float var3;
-char var4;
 string var9;
 bool var10;
 
