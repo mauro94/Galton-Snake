@@ -1,16 +1,20 @@
 main: {
+  int a, b, c, d, m;
+
+  a = 2;
+  b = 2;
+  c = 8;
+  d = 2;
+  m = 2;
+
   if(1 == 1){
-    int a;
     a = 1;
     if(2 >= 2){
-      int b;
       b = 1 + 1;
       if(3 <= 3){
-        int c;
-        c = 1*1;
+        c = c*a*b*d*m;
       }
       elseif(5 != 5){
-        int d;
         d = 1-1;
       }
 
@@ -22,7 +26,6 @@ main: {
       }
     }
     else{
-      int m;
       m = 1/1;
     }
   }
@@ -32,4 +35,7 @@ main: {
   else{
     a=1;
   }
+
+  print c;
+
 }

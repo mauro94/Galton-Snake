@@ -229,8 +229,8 @@ def p_BINDINGS(p):
                 | BIND_COLS'''
 
 def p_BLOCK(p):
-    '''BLOCK : lBr SA_FINAL_FUNC_VALUES BLOCK_STM rBr 
-             | lBr SA_FINAL_FUNC_VALUES BLOCK_STM return EXP SA_RET semi_colon rBr '''
+    '''BLOCK : SA_FINAL_FUNC_VALUES BLOCK_STM 
+             | SA_FINAL_FUNC_VALUES BLOCK_STM return EXP SA_RET semi_colon '''
 
 def p_BLOCK_STM(p):
     '''BLOCK_STM : STATEMENT BLOCK_STM 
@@ -248,13 +248,13 @@ def p_CALLFUNC_PARAMS(p):
                        | empty'''
 
 def p_CONDITION(p):
-    '''CONDITION : if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK SA_COND_2
-                 | if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK elseif SA_COND_4 SA_COND_2 CONDITION_ELIF else SA_COND_3 BLOCK SA_COND_2 SA_COND_5
-                 | if lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK else SA_COND_3 BLOCK SA_COND_2'''
+    '''CONDITION : if lPar SUPER_EXPRESSION rPar SA_COND_1 lBr BLOCK rBr SA_COND_2
+                 | if lPar SUPER_EXPRESSION rPar SA_COND_1 lBr BLOCK rBr elseif SA_COND_4 SA_COND_2 CONDITION_ELIF else SA_COND_3 lBr BLOCK rBr SA_COND_2 SA_COND_5
+                 | if lPar SUPER_EXPRESSION rPar SA_COND_1 lBr BLOCK rBr else SA_COND_3 lBr BLOCK rBr SA_COND_2'''
 
 def p_CONDITION_ELIF(p):
-    '''CONDITION_ELIF : lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK elseif SA_COND_4 SA_COND_2 CONDITION_ELIF
-                      | lPar SUPER_EXPRESSION rPar SA_COND_1 BLOCK'''
+    '''CONDITION_ELIF : lPar SUPER_EXPRESSION rPar SA_COND_1 lBr BLOCK rBr elseif SA_COND_4 SA_COND_2 CONDITION_ELIF
+                      | lPar SUPER_EXPRESSION rPar SA_COND_1 lBr BLOCK rBr'''
 
 def p_CORR_HEADERS(p):
     '''CORR_HEADERS : correlateHeaders lPar TABLE_HEADER coma TABLE_HEADER coma cte_float rPar semi_colon '''
@@ -298,15 +298,15 @@ def p_FACTOR(p):
               | VAR_CTE '''
 
 def p_FUNCTION(p):
-    '''FUNCTION : func void SA_VOID_FUNCTION id SA_NEW_FUNCTION lPar PARAMETERS rPar colon INSTANTIATE BLOCK SA_END_FUNCTION
-                | func TYPE id SA_NEW_FUNCTION lPar PARAMETERS rPar colon INSTANTIATE BLOCK SA_END_FUNCTION'''
+    '''FUNCTION : func void SA_VOID_FUNCTION id SA_NEW_FUNCTION lPar PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION
+                | func TYPE id SA_NEW_FUNCTION lPar PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION'''
 
 def p_INSTANTIATE(p):
     '''INSTANTIATE : CREATE_DF 
                    | VARS'''
 
 def p_LOOP(p):
-    '''LOOP : while SA_LOOP_1 lPar SUPER_EXPRESSION rPar SA_LOOP_2 BLOCK SA_LOOP_3'''
+    '''LOOP : while SA_LOOP_1 lPar SUPER_EXPRESSION rPar SA_LOOP_2 lBr BLOCK rBr SA_LOOP_3'''
 
 def p_OPERATION(p):
     '''OPERATION : BINDINGS 
@@ -346,7 +346,7 @@ def p_PRINT(p):
              | PRINT_ROW'''
 
 def p_PROGRAM(p):
-    '''PROGRAM : SA_PROGRAM_START PROGRAM_VARS PROGRAM_FUNCTIONS main SA_MAIN_START colon INSTANTIATE BLOCK SA_END_PROGRAM'''
+    '''PROGRAM : SA_PROGRAM_START PROGRAM_VARS PROGRAM_FUNCTIONS main SA_MAIN_START colon lBr INSTANTIATE BLOCK rBr SA_END_PROGRAM'''
 
 def p_PROGRAM_VARS(p):
     '''PROGRAM_VARS : INSTANTIATE PROGRAM_VARS
