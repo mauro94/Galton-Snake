@@ -28,3 +28,7 @@ def stackPop(stack):
 def newQuadruple(list, operator, operand1, operand2, result):
 	global quadruples
 	list.append({'operator':operator, 'operand1':operand1, 'operand2':operand2, 'result':result})
+
+# -------------------------- MEMORY FUNCTIONS -------------------------------
+def between (value, low, high):
+  return (low <= value < high)

@@ -9,7 +9,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
   # Memory map
   memory = Memory('memory', globalVarCount, localVarCount, tempVarCount, constVarCount)
-  memory.initialize_constants(constants)
+  memory.initializeConstants(constants)
 
   # Quadruple counter
   quad_count = 0
@@ -23,8 +23,9 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     leftOp = q['operand1']
     rightOp = q['operand2']
     resultAddress = q['result']
+    operator = getOperation(q['operator'])
 
-    print (q['operator'], leftOp, rightOp, resultAddress)
+    # print (q['operator'], leftOp, rightOp, resultAddress)
 
     # Arithmetic
     # Addition
@@ -243,8 +244,8 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
       print matrix
 
-      # TODO: check what matrix is and store in memory
-      # TODO: generate memory for DF
+    # TODO: check what matrix is and store in memory
+    # TODO: generate memory for DF
 
     # ENDPROC
     # elif q['operator'] == 'EndProc':

@@ -126,7 +126,10 @@ class Memory:
       # Return
       return value
 
-  #Set value
+  # Get array value
+  def getArrayValue(self, value, address):
+
+  # Set value
   def setValue(self, value, address):
     scope = getScope(address)
 
@@ -184,9 +187,12 @@ class Memory:
           return True
         else:
           return False
+
+  # Set array value
+  def setArrayValue
   
   # Initialize constants in memory
-  def initialize_constants(self, constants):
+  def initializeConstants(self, constants):
     # Iterate all constants
     for key, value in constants.items():
       if value['type'] == 1:
@@ -254,12 +260,7 @@ def getScope (address):
     return 'local'
   elif between(address, initial_temp_bool, initial_constant_bool):
     return 'temp'
-  # TODO: define a memory limit
   elif between(address, initial_constant_bool, 100000):
     return 'constant'
   else:
     print('Address non existent')
-
-# Function to check values between
-def between (value, low, high):
-  return (low <= value < high)
