@@ -1483,7 +1483,6 @@ if __name__ == '__main__':
       if (yacc.parse(data, tracking = True) == 'OK'):
         print(dirProc)
       # Execute virtual machine
-      print globalVarCount, localVarCount, tempVarCount, constVarCount
       execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable)
     except EOFError:
         print(EOFError)

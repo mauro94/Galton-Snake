@@ -19,20 +19,32 @@ datatypeCode = {
 
 # Operation code
 opCode = {
-  'relop_gr' : 100,
-  'relop_ls' : 101,
-  'relop_grequal' : 102,
-  'relop_lsequal' : 103,
-  'relop_lsequal' : 104,
-  'relop_equals' : 105,
-  'relop_notequal' : 106,
-  'relop_and' : 107,
-  'relop_or' : 108,
-  'equal' : 109,
-  'plus' : 110,
-  'minus' : 111,
-  'times' : 112,
-  'divide' : 113
+  # relop_gr
+  100 : '>',
+  # relop_ls
+  101 : '<',
+  # relop_grequal
+  102 : '>=',
+  # relop_lsequal
+  103 : '<=',
+  # relop_equals
+  104 : '==',
+  # relop_notequal
+  105 : '!=',
+  # relop_and
+  106 : '&&',
+  # relop_or
+  107 : '||',
+  # equal
+  108 : '=',
+  # plus
+  109 : '+',
+  # minus
+  110 : '-',
+  # times
+  111 : '*',
+  # divide
+  112 : '/'
 }
 
 cube = {}
@@ -200,3 +212,6 @@ def getResultType(operand1, operand2, operator):
     return -1
   else:
     return cube[result]
+
+def getOperationCode(operator):
+  return opCode[operator]
