@@ -161,6 +161,34 @@ def getTypeCode (type):
   elif type == 'dataframeArray': 
     return datatypeCode['dataframeArray']
 
+def getOpCode (op):
+  if op == '>':
+    return opCode['relop_gr']
+  elif op == '<': 
+    return opCode['relop_ls']
+  elif op == '>=': 
+    return opCode['relop_grequal']
+  elif op == '<=': 
+    return opCode['relop_lsequal']
+  elif op == '==':
+    return opCode['relop_equals']
+  elif op == '!=': 
+    return opCode['relop_notequal']
+  elif op == '&&': 
+    return opCode['relop_and']
+  elif op == '||': 
+    return opCode['relop_or']
+  elif op == '=':
+    return opCode['equal']
+  elif op == '+': 
+    return opCode['plus']
+  elif op == '-': 
+    return opCode['minus']
+  elif op == '*': 
+    return opCode['times']
+  elif op == '/': 
+    return opCode['divide']
+
 def getResultType(operand1, operand2, operator):
   one = getTypeString(operand1)
   two = getTypeString(operand2)

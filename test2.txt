@@ -13,7 +13,6 @@ func int func1(int p1, float p2, bool p3): {
   
   var1 = 7;
   var3 = 5.7;
-  var4 = 'r';
   var9 = "func1";
   var10 = true;
 
@@ -46,7 +45,6 @@ func int func2(int p1): {
 
   var1 = 9;
   var3 = 3.5;
-  var4 = 'd';
   var9 = "func2";
   var10 = false;
   
@@ -67,15 +65,14 @@ main: {
 
   var1 = -3;
   var3 = 2.7;
-  var4 = 'w';
   var9 = "main";
   var10 = false;
 
   var1 = func1(var1, var3, var10);
 
-  printData var1;
+  print var1;
 
   var1 = func2(var1);
 
-  printData var1;
+  print var1;
 }

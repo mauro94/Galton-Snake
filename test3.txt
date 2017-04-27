@@ -3,6 +3,7 @@ float f;
 
 func int tres(): {
 	int i;
+	i = 3;
 	return i;
 }
 

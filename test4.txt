@@ -1,41 +1,5 @@
+
 main: {
-  int a, b, c, d, m;
-
-  a = 2;
-  b = 2;
-  c = 8;
-  d = 2;
-  m = 2;
-
-  if(1 == 1){
-    a = 1;
-    if(2 >= 2){
-      b = 1 + 1;
-      if(3 <= 3){
-        c = c*a*b*d*m;
-      }
-      elseif(5 != 5){
-        d = 1-1;
-      }
-
-      elseif(6 > 7){
-        a = 3;
-      }
-      else{
-        a = 6;
-      }
-    }
-    else{
-      m = 1/1;
-    }
-  }
-  elseif(true && true){
-    a = 1+1;
-  }
-  else{
-    a=1;
-  }
-
-  print c;
-
+  int a[5];
+  a[3] = 0;
 }

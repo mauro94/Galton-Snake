@@ -295,15 +295,16 @@ def p_FACTOR(p):
     '''FACTOR : lPar SA_FAKE_BOTTOM EXPRESSION SA_FAKE_BOTTOM_REMOVE rPar 
               | plus SA_NEW_SIGN VAR_CTE 
               | minus SA_NEW_SIGN VAR_CTE 
-              | VAR_CTE '''
+              | SA_NEW_SIGN VAR_CTE '''
 
 def p_FUNCTION(p):
     '''FUNCTION : func void SA_VOID_FUNCTION id SA_NEW_FUNCTION lPar PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION
                 | func TYPE id SA_NEW_FUNCTION lPar PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION'''
 
 def p_INSTANTIATE(p):
-    '''INSTANTIATE : CREATE_DF 
-                   | VARS'''
+    '''INSTANTIATE : CREATE_DF INSTANTIATE
+                   | VARS INSTANTIATE
+                   | '''
 
 def p_LOOP(p):
     '''LOOP : while SA_LOOP_1 lPar SUPER_EXPRESSION rPar SA_LOOP_2 lBr BLOCK rBr SA_LOOP_3'''
@@ -346,11 +347,7 @@ def p_PRINT(p):
              | PRINT_ROW'''
 
 def p_PROGRAM(p):
-    '''PROGRAM : SA_PROGRAM_START PROGRAM_VARS PROGRAM_FUNCTIONS main SA_MAIN_START colon lBr INSTANTIATE BLOCK rBr SA_END_PROGRAM'''
-
-def p_PROGRAM_VARS(p):
-    '''PROGRAM_VARS : INSTANTIATE PROGRAM_VARS
-                    | empty'''
+    '''PROGRAM : SA_PROGRAM_START INSTANTIATE PROGRAM_FUNCTIONS main SA_MAIN_START colon lBr INSTANTIATE BLOCK rBr SA_END_PROGRAM'''
 
 def p_PROGRAM_FUNCTIONS(p):
     '''PROGRAM_FUNCTIONS : FUNCTION PROGRAM_FUNCTIONS
@@ -433,6 +430,10 @@ def p_SA_DF_ADD_FILE(p):
   if (varID == None):
     # get dataframe id
     varID = p[-4]
+  # verify file string is not in constant table
+  if not constantTable.has_key(str(file)):
+    # add file string to constant table
+    constantTable[str(file)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': file}
   # add file name
   functionDirectory[current_scope]['varTable'][varID]['file'] = file
 
@@ -451,7 +452,7 @@ def p_SA_ADD_DF_TAG(p):
   # verify if new tag already exists
   if functionDirectory[current_scope]['varTable'][varID]['tags'].has_key(tag):
     # print error message
-    print("Tag already exists '%s'" % tag)
+    print("Tag already exists. Tag: '%s'" % tag)
     exit(1)
   else:
     # add new tag
@@ -522,7 +523,7 @@ def p_SA_CREATE_PARAMS(p):
   # search for current function
   if functionDirectory[current_scope]['varTable'].has_key(varID):
     # print error message
-    print("Parameter already exists '%s'" % varID)
+    print("Parameter already exists. Parameter: '%s'" % varID)
     exit(1)
   else:
     # add variable to varTable
@@ -539,7 +540,7 @@ def p_SA_CREATE_PARAMS(p):
 
 
 
-  # New variable is being created. 
+# New variable is being created. 
 # Add new variable to current varTable. If found declare error.
 def p_SA_CREATE_VAR(p):
   '''SA_CREATE_VAR : empty'''
@@ -550,7 +551,7 @@ def p_SA_CREATE_VAR(p):
   # validate if current variable does already exists in current varTable and global varTable
   if functionDirectory[current_scope]['varTable'].has_key(varID) or functionDirectory['global']['varTable'].has_key(varID):
     # print error message
-    print("ID already exists '%s'" % varID)
+    print("Variable already exists. Variable: '%s'" % varID)
     exit(1)
   else:
     # dataframe
@@ -589,7 +590,7 @@ def p_SA_DF_FIND_HEADER_ID(p):
   # search for dataframe id and header id in current varTable and in global varTable
   if not (functionDirectory[current_scope]['varTable'][varID]['headers'].has_key(headerID) or functionDirectory['global']['varTable'][varID]['headers'].has_key(headerID)):
     # print error message
-    print("ID does not exist '%s'" % p[-1])
+    print("Header does not exist. Header: '%s'" % p[-1])
     exit(1)
 
 
@@ -655,7 +656,7 @@ def p_SA_FIND_ID(p):
   # search for id in current varTable and in global varTable
   if not (functionDirectory[current_scope]['varTable'].has_key(varID) or functionDirectory['global']['varTable'].has_key(varID)):
     # print error message
-    print("ID does not exist '%s'" % varID)
+    print("ID does not exist. ID: '%s'" % varID)
     exit(1)
 
 
@@ -669,7 +670,7 @@ def p_SA_FIND_FUNC_ID(p):
   # search for function id in function directory
   if not funcID in functionDirectory.keys() :
     # print error message
-    print("Function ID does not exist '%s'" % funcID)
+    print("Function does not exist. Function: '%s'" % funcID)
     exit(1)
 
 
@@ -714,7 +715,7 @@ def p_SA_NEW_FUNCTION(p):
   # verify if function id already exists
   if functionDirectory.has_key(current_scope):
     # print error message
-    print("Function ID already exists '%s'" % current_scope)
+    print("Function already exists. Function: '%s'" % current_scope)
     exit(1)
   else:
     # create new function in function directory
@@ -728,8 +729,14 @@ def p_SA_NEW_SIGN(p):
   '''SA_NEW_SIGN : empty'''
   # global variables
   global current_sign
-  # define current_sign
-  current_sign = p[-1]
+  # get sign
+  sign = p[-1]
+  # verify sign
+  if (sign == '-'):
+    # define current_sign
+    current_sign = '-'
+  else:
+    current_sign = None
 
 
 
@@ -806,8 +813,8 @@ def p_SA_EXP_1_CTE(p):
     t = constantTable[str(varID)]['type']
     d = constantTable[str(varID)]['address']
   elif constantTable.has_key('-' + str(varID)):
-    t = constantTable[str('-' + varID)]['type']
-    d = constantTable[str(varID)]['address']
+    t = constantTable[str('-' + str(varID))]['type']
+    d = constantTable[str('-' + str(varID))]['address']
   # Push
   stackPush(operands, d)
   stackPush(types, t)
@@ -849,7 +856,7 @@ def p_SA_EXP_6(p):
     #valid operation
     if resultType > 0:
       # create quadruple
-      newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[getTypeString(resultType)])
       # update quadruple counter
       cont += 1
       # push result to operand stack
@@ -860,7 +867,7 @@ def p_SA_EXP_6(p):
       tempVarCount[getTypeString(resultType)] += 1
     else:
       # print error message
-      print("Result type mismatch")
+      print("Result type mismatch. '%s' '%s' '%s'" % (leftOp, operator, rightOp))
       exit(1)
 
 # Verify [<, >, <=, >=, ==, !=] are at top of stack
@@ -887,7 +894,7 @@ def p_SA_EXP_7(p):
     #valid operation
     if resultType > 0:
       # create quadruple
-      newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[getTypeString(resultType)])
       # update quadruple counter
       cont += 1
       # push result to operand stack
@@ -898,7 +905,7 @@ def p_SA_EXP_7(p):
       tempVarCount[getTypeString(resultType)] += 1
     else:
       # print error message
-      print("Result type mismatch")
+      print("Result type mismatch. '%s' '%s' '%s'" % (leftOp, operator, rightOp))
       exit(1)
 
 # Verify + or -  are at top of stack
@@ -925,7 +932,7 @@ def p_SA_EXP_8(p):
     #valid operation
     if resultType > 0:
       # create quadruple
-      newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[getTypeString(resultType)])
       # update quadruple counter
       cont += 1
       # push result to operand stack
@@ -936,7 +943,7 @@ def p_SA_EXP_8(p):
       tempVarCount[getTypeString(resultType)] += 1
     else:
       # print error message
-      print("Result type mismatch")
+      print("Result type mismatch. '%s' '%s' '%s'" % (leftOp, operator, rightOp))
       exit(1)
 
 # Verify * or / are at top of stack
@@ -963,7 +970,7 @@ def p_SA_EXP_9(p):
     #valid operation
     if resultType > 0:
       # create quadruple
-      newQuadruple(quadruples, operator, leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[getTypeString(resultType)])
       # update quadruple counter
       cont += 1
       # push result to operand stack
@@ -974,7 +981,7 @@ def p_SA_EXP_9(p):
       tempVarCount[getTypeString(resultType)] += 1
     else:
       # print error message
-      print("Result type mismatch")
+      print("Result type mismatch. '%s' '%s' '%s'" % (leftOp, operator, rightOp))
       exit(1)
 
 
@@ -1002,12 +1009,12 @@ def p_SA_EXP_10(p):
     #valid operation
     if resultType > 0:
       # create quadruple
-      newQuadruple(quadruples, operator, rightOp, None, leftOp)
+      newQuadruple(quadruples, getOpCode(operator), rightOp, None, leftOp)
       # update quadruple counter
       cont += 1
     else:
       # print error message
-      print("Result type mismatch")
+      print("Result type mismatch. '%s' '%s' '%s'" % (leftOp, operator, rightOp))
       exit(1)
 
 
@@ -1043,7 +1050,7 @@ def p_SA_COND_1(p):
   # validate previous expression is bool
   if t != getTypeCode('bool'):
     # print error message
-    print("Type mismatch")
+    print("Type mismatch. Not a boolean result from expression.")
     exit(1)
   else:
     # get current operand
@@ -1208,7 +1215,7 @@ def p_SA_CALLFUNC_3(p):
     cont += 1
   else:
     # print error message
-    print("Result type mismatch")
+    print("Result type mismatch. Function parameters incorrect. Parameter: '%s'" % argument)
     exit(1)
 
 
@@ -1237,7 +1244,7 @@ def p_SA_CALLFUNC_5(p):
     # verify parameter count
     if pointer+1 != len(functionDirectory[callFunc_scope]['signature']):
       # print error message
-      print("Wrong parameter count")
+      print("Incorrect parameter count.")
       exit(1)
 
 
@@ -1303,7 +1310,7 @@ def p_SA_RET(p):
   # Update quadruple counter
     cont += 1
   else:
-    print("Return type mismatch")
+    print("Return type mismatch. Incorrect return. Function: '%s'" % current_scope)
     exit(1)
 
 
@@ -1349,7 +1356,7 @@ def p_SA_ARR_2(p):
     # push var to dimensions stack
     stackPush(dimensions, {'varID': varID, 'dim': current_dim})
   else:
-    print("Inocrrect variable type. Dimensioned variable required.")
+    print("Incorrect variable type. Dimensioned variable required.")
     exit(1)
 
 
