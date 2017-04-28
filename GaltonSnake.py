@@ -299,7 +299,7 @@ def p_FUNCTION(p):
 def p_INSTANTIATE(p):
     '''INSTANTIATE : CREATE_DF INSTANTIATE
                    | VARS INSTANTIATE
-                   | '''
+                   | empty'''
 
 def p_LOOP(p):
     '''LOOP : while SA_LOOP_1 lPar SUPER_EXPRESSION rPar SA_LOOP_2 lBr BLOCK rBr SA_LOOP_3'''
@@ -425,12 +425,13 @@ def p_SA_DF_ADD_FILE(p):
   if (varID == None):
     # get dataframe id
     varID = p[-4]
-  # verify file string is not in constant table
-  if not constantTable.has_key(str(file)):
-    # add file string to constant table
-    constantTable[str(file)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': file}
   # add file name
   functionDirectory[current_scope]['varTable'][varID]['file'] = file
+  # create quadruple
+  newQuadruple(quadruples, getOpCode('ReadFile'), None, None, file)
+  # update quadruple counter
+  cont += 1
+
 
 
 
@@ -553,6 +554,10 @@ def p_SA_CREATE_VAR(p):
     if current_type == 'dataframe':
       # create variable PENDING
       functionDirectory[current_scope]['varTable'][varID] = {'type': getTypeCode(current_type), 'address': 0, 'tags': {}, 'file': None, 'headers': {'name': '', 'col': 0}, 'data': [[]]}
+      # create quadruple
+      newQuadruple(quadruples, getOpCode('PrepDF'), None, None, None)
+      # update quadruple counter
+      cont += 1
     # other variable type
     else:
       # create variable
@@ -574,7 +579,7 @@ def p_SA_CREATE_VAR(p):
 
 
 
-# Table header ID is declared. PENDING
+# Table header ID is declared. 
 # Verify header id is in current dataframe. If not found declare error.
 def p_SA_DF_FIND_HEADER_ID(p):
   '''SA_DF_FIND_HEADER_ID : empty'''
@@ -620,9 +625,6 @@ def p_SA_END_PROGRAM(p):
     c += 1
 
   print functionDirectory
-  print constantTable
-  print ''
-  print localVarCount
 
   # clear function dictionary
   functionDirectory.clear() 

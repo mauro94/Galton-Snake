@@ -64,7 +64,11 @@ opCode = {
   # Ver
   'Ver' : 208,
   # Print
-  'Print' : 209
+  'Print' : 209,
+  # Read File
+  'ReadFile' : 300,
+  # Prep DF
+  'PrepDF' : 300
 }
 
 cube = {}
