@@ -2,6 +2,7 @@ from Cube import *
 from GaltonSnake import *
 from VirtualMachine import *
 from Functions import *
+from ActivationRecord import *
 
 class Memory:
   """docstring for Memory"""
@@ -28,8 +29,8 @@ class Memory:
 
   # Generate function memory
   # And push on to stack
-  def createActiveRecord(self, function, local_count, temp_count):
-    ar = ActivationRecord(function, local_count, temp_count)
+  def createActivationRecord(self, local_count, temp_count):
+    ar = ActivationRecord(local_count, temp_count)
     stackPush(self.memory_stack, ar)
 
   # Remove function memory on top of stack

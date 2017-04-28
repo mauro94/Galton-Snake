@@ -1,7 +1,7 @@
 from Functions import *
 
 class ActivationRecord:
-  def __init__(self, name, local_variables, temp_variables):
+  def __init__(self, local_variables, temp_variables):
     # Local variables
     self.local_bools      = range(local_variables['bool'] - getInitDir('local','bool'))
     self.local_ints       = range(local_variables['int'] - getInitDir('local','int'))
@@ -24,13 +24,13 @@ class ActivationRecord:
       varType = getType(address, scope)
       # Get list[address - initial_size]
       if varType == 'bool':
-        value = self.global_bools[address - getInitDir('global','bool')]
+        value = self.local_bools[address - getInitDir('local','bool')]
       elif varType == 'int':
-        value = self.global_ints[address - getInitDir('global','int')]
+        value = self.local_ints[address - getInitDir('local','int')]
       elif varType == 'float':
-        value = self.global_floats[address - getInitDir('global','float')]
+        value = self.local_floats[address - getInitDir('local','float')]
       elif varType == 'string':
-        value = self.global_strings[address - getInitDir('global','string')]
+        value = self.local_strings[address - getInitDir('local','string')]
       # Return
       return value
     elif scope == 'temp':
@@ -38,13 +38,13 @@ class ActivationRecord:
       varType = getType(address, scope)
       # Get list[address - initial size]
       if varType == 'bool':
-        value = self.global_bools[address - getInitDir('global','bool')]
+        value = self.temp_bools[address - getInitDir('temp','bool')]
       elif varType == 'int':
-        value = self.global_ints[address - getInitDir('global','int')]
+        value = self.temp_ints[address - getInitDir('temp','int')]
       elif varType == 'float':
-        value = self.global_floats[address - getInitDir('global','float')]
+        value = self.temp_floats[address - getInitDir('temp','float')]
       elif varType == 'string':
-        value = self.global_strings[address - getInitDir('global','string')]
+        value = self.temp_strings[address - getInitDir('temp','string')]
       # Return
       return value
     else:

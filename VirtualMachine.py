@@ -12,11 +12,14 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
   memory = Memory('memory', globalVarCount, localVarCount, tempVarCount, constVarCount)
   memory.initializeConstants(constants)
 
-  # TODO: Initialize AR - main
-  # Push to stack
+  # Create memory for main function
+  memory.createActivationRecord(localVarCount['main'], tempVarCount['main'])
 
   # Quadruple counter
   quad_count = 0
+
+  # Pending quads
+  pending_quads = []
 
   # Iterate all quadruples
   while (quad_count <= len(quadruples)):
@@ -27,13 +30,13 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     leftOp = q['operand1']
     rightOp = q['operand2']
     resultAddress = q['result']
-    operator = getOperation(q['operator'])
+    operator = getOpString(q['operator'])
 
-    # print (q['operator'], leftOp, rightOp, resultAddress)
+    print (q['operator'], leftOp, rightOp, resultAddress)
 
     # Arithmetic
     # Addition
-    if q['operator'] == '+':
+    if operator == '+':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -45,7 +48,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       memory.setValue(resultValue, resultAddress)
 
     # Substraction
-    elif q['operator'] == '-':
+    elif operator == '-':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -57,7 +60,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       memory.setValue(resultValue, resultAddress)
 
     # Multiplication
-    elif q['operator'] == '*':
+    elif operator == '*':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -69,7 +72,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       memory.setValue(resultValue, resultAddress)
 
     # Division
-    elif q['operator'] == '/':
+    elif operator == '/':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -86,7 +89,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
         exit(1)
 
     # Assignment
-    elif q['operator'] == '=':
+    elif operator == '=':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
 
@@ -95,7 +98,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
     # Comparison
     # <, >, <=, >=, ==, !=, &&, ||
-    elif q['operator'] == '<':
+    elif operator == '<':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -106,7 +109,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Store value in memory
       memory.setValue(resultValue, resultAddress)
 
-    elif q['operator'] == '>':
+    elif operator == '>':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -117,7 +120,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Store value in memory
       memory.setValue(resultValue, resultAddress)
 
-    elif q['operator'] == '<=':
+    elif operator == '<=':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -128,7 +131,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Store value in memory
       memory.setValue(resultValue, resultAddress)
 
-    elif q['operator'] == '>=':
+    elif operator == '>=':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -139,7 +142,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Store value in memory
       memory.setValue(resultValue, resultAddress)
 
-    elif q['operator'] == '==':
+    elif operator == '==':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -150,7 +153,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Store value in memory
       memory.setValue(resultValue, resultAddress)
 
-    elif q['operator'] == '!=':
+    elif operator == '!=':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -161,7 +164,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Store value in memory
       memory.setValue(resultValue, resultAddress)
 
-    elif q['operator'] == '||':
+    elif operator == '||':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -172,7 +175,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Store value in memory
       memory.setValue(resultValue, resultAddress)
 
-    elif q['operator'] == '&&':
+    elif operator == '&&':
       # Get value from memory
       leftOpValue = memory.getValue(leftOp)
       rightOpValue = memory.getValue(rightOp)
@@ -184,7 +187,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       memory.setValue(resultValue, resultAddress)
 
     #Arrays
-    elif q['operator'] == 'Ver':
+    elif operator == 'Ver':
       value = memory.getValue(leftOp)
       lower_lim = memory.getValue(rightOp)
       upper_lim = memory.getValue(resultAddress)
@@ -196,27 +199,27 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
         exit(1)
 
     # Printing
-    elif q['operator'] == 'print':
+    elif operator == 'Print':
       value = memory.getValue(resultAddress)
 
       print(value)
 
     # Other operators
     # Param
-    # elif q['operator'] == 'param':
+    # elif operator == 'param':
 
     # Return
-    # elif q['operator'] == 'Return':
+    # elif operator == 'Return':
 
     # GoSub
-    elif q['operator'] == 'GoSub':
-      # Get target quadruple
-      target = resultAddress
+    elif operator == 'GoSub':
+      # Push quadruple to temporal stack
+      stackPush(pending_quads, quad_count + 1)
       # Modify quadruple counter to return to target quad
-      quad_count = target - 1
+      quad_count = leftOp - 1
 
     # GotoF
-    elif q['operator'] == 'GoToF':
+    elif operator == 'GoToF':
       # Get conditional result
       result = memory.getValue(leftOp)
       # Get target quadruple
@@ -226,19 +229,19 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
         quad_count = target - 1
 
     # Goto
-    elif q['operator'] == 'GoTo':
+    elif operator == 'GoTo':
       # Get target quadruple
       target = resultAddress
       # Modify quadruple counter to return to target quad
       quad_count = target - 1
 
     # ERA
-    # elif q['operator'] == 'era':
-    # TODO: create AR of new function
-    # TODO: push to stack
+    elif operator == 'Era':
+      # Create memory for any function
+      memory.createActivationRecord(localVarCount[leftOp], tempVarCount[leftOp])
 
     # Read
-    elif q['operator'] == 'read':
+    elif operator == 'Read':
       # Get filename
       filename = memory.getValue(resultAddress)
 
@@ -252,14 +255,20 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     # TODO: generate memory for DF
 
     # ENDPROC
-    # elif q['operator'] == 'EndProc':
+    elif operator == 'EndProc':
+      # TODO: MANAGE RETURN OF INVESTMENT!!
+      # INVEST IN MEMES!!
+      memory.removeActivationRecord()
+      quad_count = stackPop(pending_quads) - 1
 
     # END
-    elif q['operator'] == 'end':
-      # TODO: check if anything else is needed here
+    elif operator == 'End':
+      memory.removeActivationRecord()
       exit(1)
 
     else:
+      print operator
+      print q['operator']
       print('Unknown operator')
       exit(1)
 
