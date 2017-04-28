@@ -1,0 +1,16 @@
+func int fibonacciR(int a): {
+  if (a <= 1) {
+    return 1;
+  }
+  else {
+    return fibonacciR(a - 1) + fibonacciR(a - 2);
+  }
+}
+
+main: {
+  int a;
+  a = 8;
+
+  a = fibonacciR(a);
+  print a;
+}
