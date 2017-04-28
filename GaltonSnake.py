@@ -1220,7 +1220,7 @@ def p_SA_CALLFUNC_2(p):
 def p_SA_CALLFUNC_3(p):
   '''SA_CALLFUNC_3 : empty'''
   # global variables
-  global cont
+  global cont, localVarCount
   # get operand
   argument = stackPop(operands)
   # get type
@@ -1232,9 +1232,11 @@ def p_SA_CALLFUNC_3(p):
   # verify type with current parameter in pointer
   if argumentType == functionDirectory[callFunc_scope]['signature'][pointer]:
     # Create action quadruple
-    newQuadruple(quadruples, getOpCode('Param'), argument, None, pointer)
+    newQuadruple(quadruples, getOpCode('Param'), argument, None, localVarCount[callFunc_scope][getTypeString(argumentType)])
     # update quadruple counter
     cont += 1
+    #increase global variable counter
+    localVarCount[callFunc_scope][getTypeString(argumentType)] += 1
   else:
     # print error message
     print("Result type mismatch. Function parameters incorrect. Parameter: '%s'" % argument)
