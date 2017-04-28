@@ -1,7 +1,5 @@
-func void func1(): {
-	int a;
-	a = 0;
-	print a;
+func int func1(int a, int b): {
+  return a + b;
 }
 
 main: {
@@ -14,7 +12,6 @@ main: {
     a = b / a;
   }
 
-  call func1();
-
+  a = func1(7, 4);
   print a;
 }
