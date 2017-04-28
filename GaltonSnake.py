@@ -293,8 +293,8 @@ def p_FACTOR(p):
               | SA_NEW_SIGN VAR_CTE '''
 
 def p_FUNCTION(p):
-    '''FUNCTION : func void SA_VOID_FUNCTION id SA_NEW_FUNCTION lPar SA_VAR_COUNTERS PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION SA_VAR_COUNTERS
-                | func TYPE id SA_NEW_FUNCTION lPar SA_VAR_COUNTERS PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION SA_VAR_COUNTERS'''
+    '''FUNCTION : func void SA_VOID_FUNCTION id SA_NEW_FUNCTION lPar SA_VAR_COUNTERS PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION
+                | func TYPE id SA_NEW_FUNCTION lPar SA_VAR_COUNTERS PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION'''
 
 def p_INSTANTIATE(p):
     '''INSTANTIATE : CREATE_DF INSTANTIATE
@@ -526,6 +526,8 @@ def p_SA_CREATE_PARAMS(p):
     functionDirectory[current_scope]['varTable'][varID] = {'type': getTypeCode(current_type), 'address': localVarCount[current_scope][current_type], 'dimension': []} 
     # add data type to signature
     functionDirectory[current_scope]['signature'].append(getTypeCode(current_type))
+    # add param new assigned address to dir func
+    functionDirectory[current_scope]['paramAddresses'].append(functionDirectory[current_scope]['varTable'][varID]['address'])
     #increase global variable counter
     localVarCount[current_scope][current_type] += 1
     # increase parameter counter
@@ -689,7 +691,7 @@ def p_SA_MAIN_START(p):
   # fill blank space
   quadruples[jump]['result'] = cont
   # create main function in function directory
-  functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
+  functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'paramAddresses': [], 'varTable': {}}
   # define current quadruple for function
   functionDirectory[current_scope]['quadCounter'] = cont
 
@@ -720,7 +722,7 @@ def p_SA_NEW_FUNCTION(p):
     exit(1)
   else:
     # create new function in function directory
-    functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
+    functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'paramAddresses': [], 'varTable': {}}
     # define current quadruple for function
     functionDirectory[current_scope]['quadCounter'] = cont
 
@@ -751,7 +753,7 @@ def p_SA_PROGRAM_START(p):
   current_type = 'void'
   current_scope = 'global'
   # create global function in function directory
-  functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
+  functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'paramAddresses': [], 'varTable': {}}
   # create first quadruple (jump to main)
   newQuadruple(quadruples, getOpCode('GoTo'), None, None, -1)
   # update quadruple counter
@@ -1234,11 +1236,9 @@ def p_SA_CALLFUNC_3(p):
   # verify type with current parameter in pointer
   if argumentType == functionDirectory[callFunc_scope]['signature'][pointer]:
     # Create action quadruple
-    newQuadruple(quadruples, getOpCode('Param'), argument, None, localVarCount[callFunc_scope][getTypeString(argumentType)])
+    newQuadruple(quadruples, getOpCode('Param'), argument, None, functionDirectory[callFunc_scope]['paramAddresses'][pointer])
     # update quadruple counter
     cont += 1
-    #increase global variable counter
-    localVarCount[callFunc_scope][getTypeString(argumentType)] += 1
   else:
     # print error message
     print("Result type mismatch. Function parameters incorrect. Parameter: '%s'" % argument)
