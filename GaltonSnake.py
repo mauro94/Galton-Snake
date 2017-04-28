@@ -179,18 +179,8 @@ globalVarCount['string'] = 16000
 globalVarCount['dataframe'] = 20000
 
 localVarCount = {}
-localVarCount['bool'] = 40000
-localVarCount['int'] = 42000
-localVarCount['float'] = 44000
-localVarCount['string'] = 46000
-localVarCount['dataframe'] = 50000
 
 tempVarCount = {}
-tempVarCount['bool'] = 60000
-tempVarCount['int'] = 62000
-tempVarCount['float'] = 64000
-tempVarCount['string'] = 66000
-tempVarCount['dataframe'] = 70000
 
 constVarCount = {}
 constVarCount['bool'] = 80000
@@ -298,8 +288,8 @@ def p_FACTOR(p):
               | SA_NEW_SIGN VAR_CTE '''
 
 def p_FUNCTION(p):
-    '''FUNCTION : func void SA_VOID_FUNCTION id SA_NEW_FUNCTION lPar PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION
-                | func TYPE id SA_NEW_FUNCTION lPar PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION'''
+    '''FUNCTION : func void SA_VOID_FUNCTION id SA_NEW_FUNCTION lPar SA_VAR_COUNTERS PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION
+                | func TYPE id SA_NEW_FUNCTION lPar SA_VAR_COUNTERS PARAMETERS rPar colon lBr INSTANTIATE BLOCK rBr SA_END_FUNCTION'''
 
 def p_INSTANTIATE(p):
     '''INSTANTIATE : CREATE_DF INSTANTIATE
@@ -347,7 +337,7 @@ def p_PRINT(p):
              | PRINT_ROW'''
 
 def p_PROGRAM(p):
-    '''PROGRAM : SA_PROGRAM_START INSTANTIATE PROGRAM_FUNCTIONS main SA_MAIN_START colon lBr INSTANTIATE BLOCK rBr SA_END_PROGRAM'''
+    '''PROGRAM : SA_PROGRAM_START INSTANTIATE PROGRAM_FUNCTIONS main SA_MAIN_START colon lBr SA_VAR_COUNTERS INSTANTIATE BLOCK rBr SA_END_PROGRAM'''
 
 def p_PROGRAM_FUNCTIONS(p):
     '''PROGRAM_FUNCTIONS : FUNCTION PROGRAM_FUNCTIONS
@@ -527,11 +517,11 @@ def p_SA_CREATE_PARAMS(p):
     exit(1)
   else:
     # add variable to varTable
-    functionDirectory[current_scope]['varTable'][varID] = {'type': getTypeCode(current_type), 'address': localVarCount[current_type], 'dimension': []} 
+    functionDirectory[current_scope]['varTable'][varID] = {'type': getTypeCode(current_type), 'address': localVarCount[current_scope][current_type], 'dimension': []} 
     # add data type to signature
     functionDirectory[current_scope]['signature'].append(getTypeCode(current_type))
     #increase global variable counter
-    localVarCount[current_type] += 1
+    localVarCount[current_scope][current_type] += 1
     # increase parameter counter
     paramCount += 1
     # increase local variable counter
@@ -571,9 +561,9 @@ def p_SA_CREATE_VAR(p):
       globalVarCount[current_type] += 1
     else:
       # assign address
-      functionDirectory[current_scope]['varTable'][varID]['address'] = localVarCount[current_type]
+      functionDirectory[current_scope]['varTable'][varID]['address'] = localVarCount[current_scope][current_type]
       #increase global variable counter
-      localVarCount[current_type] += 1
+      localVarCount[current_scope][current_type] += 1
     # increase local variable counter
     varCounter += 1
 
@@ -625,6 +615,9 @@ def p_SA_END_PROGRAM(p):
     c += 1
 
   print functionDirectory
+  print constantTable
+  print ''
+  print localVarCount
 
   # clear function dictionary
   functionDirectory.clear() 
@@ -739,7 +732,6 @@ def p_SA_NEW_SIGN(p):
     current_sign = None
 
 
-
 # A new porgram is created.
 # Create function directory
 def p_SA_PROGRAM_START(p):
@@ -769,6 +761,29 @@ def p_SA_TYPE(p):
   # define current_type
   current_type = p[-1]
 
+
+# New function starting
+# Define local var counters for function
+def p_SA_VAR_COUNTERS(p):
+  '''SA_VAR_COUNTERS : empty'''
+  # get current function id
+  funcID = current_scope
+  # create function in var counter
+  localVarCount[funcID] =  {}
+  # define type counters
+  localVarCount[funcID]['bool'] = 40000
+  localVarCount[funcID]['int'] = 42000
+  localVarCount[funcID]['float'] = 44000
+  localVarCount[funcID]['string'] = 46000
+  localVarCount[funcID]['dataframe'] = 50000
+  # create function in var counter
+  tempVarCount[funcID] =  {}
+  # define type counters
+  tempVarCount[funcID]['bool'] = 60000
+  tempVarCount[funcID]['int'] = 62000
+  tempVarCount[funcID]['float'] = 64000
+  tempVarCount[funcID]['string'] = 66000
+  tempVarCount[funcID]['dataframe'] = 70000
 
 
 # Void function found. 
@@ -856,15 +871,15 @@ def p_SA_EXP_6(p):
     #valid operation
     if resultType > 0:
       # create quadruple
-      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[current_scope][getTypeString(resultType)])
       # update quadruple counter
       cont += 1
       # push result to operand stack
-      stackPush(operands, tempVarCount[getTypeString(resultType)])
+      stackPush(operands, tempVarCount[current_scope][getTypeString(resultType)])
       # push type result to type stack
       stackPush(types, resultType)
       # update tempVar count
-      tempVarCount[getTypeString(resultType)] += 1
+      tempVarCount[current_scope][getTypeString(resultType)] += 1
     else:
       # print error message
       print("Result type mismatch. '%s' '%s' '%s'" % (leftOp, operator, rightOp))
@@ -894,15 +909,15 @@ def p_SA_EXP_7(p):
     #valid operation
     if resultType > 0:
       # create quadruple
-      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[current_scope][getTypeString(resultType)])
       # update quadruple counter
       cont += 1
       # push result to operand stack
-      stackPush(operands, tempVarCount[getTypeString(resultType)])
+      stackPush(operands, tempVarCount[current_scope][getTypeString(resultType)])
       # push type result to type stack
       stackPush(types, resultType)
       # update tempVar count
-      tempVarCount[getTypeString(resultType)] += 1
+      tempVarCount[current_scope][getTypeString(resultType)] += 1
     else:
       # print error message
       print("Result type mismatch. '%s' '%s' '%s'" % (leftOp, operator, rightOp))
@@ -932,15 +947,15 @@ def p_SA_EXP_8(p):
     #valid operation
     if resultType > 0:
       # create quadruple
-      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[current_scope][getTypeString(resultType)])
       # update quadruple counter
       cont += 1
       # push result to operand stack
-      stackPush(operands, tempVarCount[getTypeString(resultType)])
+      stackPush(operands, tempVarCount[current_scope][getTypeString(resultType)])
       # push type result to type stack
       stackPush(types, resultType)
       # update tempVar count
-      tempVarCount[getTypeString(resultType)] += 1
+      tempVarCount[current_scope][getTypeString(resultType)] += 1
     else:
       # print error message
       print("Result type mismatch. '%s' '%s' '%s'" % (leftOp, operator, rightOp))
@@ -970,15 +985,15 @@ def p_SA_EXP_9(p):
     #valid operation
     if resultType > 0:
       # create quadruple
-      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[getTypeString(resultType)])
+      newQuadruple(quadruples, getOpCode(operator), leftOp, rightOp, tempVarCount[current_scope][getTypeString(resultType)])
       # update quadruple counter
       cont += 1
       # push result to operand stack
-      stackPush(operands, tempVarCount[getTypeString(resultType)])
+      stackPush(operands, tempVarCount[current_scope][getTypeString(resultType)])
       # push type result to type stack
       stackPush(types, resultType)
       # update tempVar count
-      tempVarCount[getTypeString(resultType)] += 1
+      tempVarCount[current_scope][getTypeString(resultType)] += 1
     else:
       # print error message
       print("Result type mismatch. '%s' '%s' '%s'" % (leftOp, operator, rightOp))
@@ -1284,13 +1299,13 @@ def p_SA_CALLFUNC_7(p):
   # Verify that function has a return type
   if datatypeCode[funcType] > 0:
   # Generate assignment quadruple to function value
-    newQuadruple(quadruples, getOpCode('='), funcID, None, tempVarCount[funcType])
+    newQuadruple(quadruples, getOpCode('='), funcID, None, tempVarCount[current_scope][funcType])
   # Push temporary value to operands
-    stackPush(operands, tempVarCount[funcType])
+    stackPush(operands, tempVarCount[current_scope][funcType])
   # Push temporary value to types
     stackPush(types, datatypeCode[funcType])
   # Update tempVar count
-    tempVarCount[funcType] += 1
+    tempVarCount[current_scope][funcType] += 1
 
 # Return value
 # Generate necesary quadruple
@@ -1338,7 +1353,7 @@ def p_SA_ARR_1(p):
     globalVarCount[current_type] += size-1
   else:
     #increase global variable counter
-    localVarCount[current_type] += size-1
+    localVarCount[current_scope][current_type] += size-1
 
 
 # Array access declared
@@ -1391,7 +1406,7 @@ def p_SA_ARR_3(p):
     #increase constant variable counter
     constVarCount[getTypeString(t)] += 1
   #cretae special dir
-  specialDir = '(' + str(tempVarCount[getTypeString(t)]) + ')'
+  specialDir = '(' + str(tempVarCount[current_scope][getTypeString(t)]) + ')'
   # create quadruple
   newQuadruple(quadruples, getOpCode('+'), aux, constantTable[str(dir)]['address'], specialDir)
   # update quadruple counter
@@ -1401,7 +1416,7 @@ def p_SA_ARR_3(p):
   # push type result to type stack
   stackPush(types, t)
   # update tempVar count
-  tempVarCount[getTypeString(t)] += 1
+  tempVarCount[current_scope][getTypeString(t)] += 1
 
 
 # Array assignment started a = [ ]
