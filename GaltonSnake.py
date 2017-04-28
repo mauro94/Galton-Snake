@@ -602,10 +602,12 @@ def p_SA_END_FUNCTION(p):
   global functionDirectory, cont
   # clear function varTable
   functionDirectory[current_scope]['varTable'].clear()
-  # create endproc quadruple
-  newQuadruple(quadruples, getOpCode('EndProc'), None, None, None)
-  # update quadruple counter
-  cont += 1
+  # check if previous quadruple is return
+  if quadruples[cont-1]['operator'] != getOpCode('Return'):
+    # create endproc quadruple
+    newQuadruple(quadruples, getOpCode('EndProc'), None, None, None)
+    # update quadruple counter
+    cont += 1
 
 
 
