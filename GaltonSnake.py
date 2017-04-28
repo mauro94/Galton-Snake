@@ -642,8 +642,6 @@ def p_SA_FINAL_FUNC_VALUES(p):
   # define local variable count for function and reset counter
   functionDirectory[current_scope]['localVariableCount'] = varCounter
   varCounter = 0
-  # define current quadruple for function
-  functionDirectory[current_scope]['quadCounter'] = cont
 
 
 
@@ -720,7 +718,8 @@ def p_SA_NEW_FUNCTION(p):
   else:
     # create new function in function directory
     functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
-
+    # define current quadruple for function
+    functionDirectory[current_scope]['quadCounter'] = cont
 
 
 # Sign defined for variable. 
@@ -1285,7 +1284,7 @@ def p_SA_CALLFUNC_6(p):
   if funcID is None:
     funcID = p[-7]
   # Create gosub quadruple
-  newQuadruple(quadruples, getOpCode('GoSub'), funcID, None, None)
+  newQuadruple(quadruples, getOpCode('GoSub'), functionDirectory[current_scope]['quadCounter'], None, None)
   # update quadruple counter
   cont += 1
 
@@ -1306,7 +1305,7 @@ def p_SA_CALLFUNC_7(p):
   # Verify that function has a return type
   if datatypeCode[funcType] > 0:
   # Generate assignment quadruple to function value
-    newQuadruple(quadruples, getOpCode('='), funcID, None, tempVarCount[current_scope][funcType])
+    newQuadruple(quadruples, getOpCode('='), functionDirectory[current_scope]['quadCounter'], None, tempVarCount[current_scope][funcType])
   # Push temporary value to operands
     stackPush(operands, tempVarCount[current_scope][funcType])
   # Push temporary value to types
@@ -1477,7 +1476,7 @@ def p_SA_PRINT_DATA(p):
   elif functionDirectory['global']['varTable'].has_key(varID):
     address = functionDirectory['global']['varTable'][varID]['address']
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('print'), None, None, address)
+  newQuadruple(quadruples, getOpCode('Print'), None, None, address)
   # update quadruple counter
   cont += 1
 
@@ -1499,7 +1498,7 @@ if __name__ == '__main__':
       if (yacc.parse(data, tracking = True) == 'OK'):
         print(dirProc)
       # Execute virtual machine
-      #execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable)
+      execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable)
     except EOFError:
         print(EOFError)
   else:
