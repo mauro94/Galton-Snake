@@ -20,31 +20,51 @@ datatypeCode = {
 # Operation code
 opCode = {
   # relop_gr
-  100 : '>',
+  '>' : 100,
   # relop_ls
-  101 : '<',
+  '<' : 101,
   # relop_grequal
-  102 : '>=',
+  '>=' : 102,
   # relop_lsequal
-  103 : '<=',
+  '<=' : 103,
   # relop_equals
-  104 : '==',
+  '==' : 104,
   # relop_notequal
-  105 : '!=',
+  '!=' : 105,
   # relop_and
-  106 : '&&',
+  '&&' : 106,
   # relop_or
-  107 : '||',
+  '||' : 107,
   # equal
-  108 : '=',
+  '=' : 108,
   # plus
-  109 : '+',
+  '+' : 109,
   # minus
-  110 : '-',
+  '-' : 110,
   # times
-  111 : '*',
+  '*' : 111,
   # divide
-  112 : '/'
+  '/' : 112,
+  # GoTo
+  'GoTo' : 200,
+  # GoToF
+  'GoToF' : 201,
+  # Return
+  'Return' : 202,
+  # EndProc
+  'EndProc' : 203,
+  # end
+  'End' : 204,
+  # era
+  'Era' : 205,
+  # param
+  'Param' : 206,
+  # GoSub
+  'GoSub' : 207,
+  # Ver
+  'Ver' : 208,
+  # Print
+  'Print' : 209
 }
 
 cube = {}
@@ -173,33 +193,101 @@ def getTypeCode (type):
   elif type == 'dataframeArray': 
     return datatypeCode['dataframeArray']
 
+def getOpString (op):
+  if op == 100:
+    return '>'
+  elif op == 101: 
+    return '<'
+  elif op == 102: 
+    return '>='
+  elif op == 103: 
+    return '<='
+  elif op == 104:
+    return '=='
+  elif op == 105: 
+    return '!='
+  elif op == 106: 
+    return '&&'
+  elif op == 107: 
+    return '||'
+  elif op == 108:
+    return '='
+  elif op == 109: 
+    return '+'
+  elif op == 110: 
+    return '-'
+  elif op == 111: 
+    return '*'
+  elif op == 112: 
+    return '/'
+  elif op == 200: 
+    return 'GoTo'
+  elif op == 201: 
+    return 'GoToF'
+  elif op == 202: 
+    return 'Return'
+  elif op == 203: 
+    return 'EndProc'
+  elif op == 204: 
+    return 'End'
+  elif op == 205: 
+    return 'Era'
+  elif op == 206: 
+    return 'Param'
+  elif op == 207: 
+    return 'GoSub'
+  elif op == 208: 
+    return 'Ver'
+  elif op == 209: 
+    return 'Print'
+
 def getOpCode (op):
   if op == '>':
-    return opCode['relop_gr']
+    return opCode['>']
   elif op == '<': 
-    return opCode['relop_ls']
+    return opCode['<']
   elif op == '>=': 
-    return opCode['relop_grequal']
+    return opCode['>=']
   elif op == '<=': 
-    return opCode['relop_lsequal']
+    return opCode['<=']
   elif op == '==':
-    return opCode['relop_equals']
+    return opCode['==']
   elif op == '!=': 
-    return opCode['relop_notequal']
+    return opCode['!=']
   elif op == '&&': 
-    return opCode['relop_and']
+    return opCode['&&']
   elif op == '||': 
-    return opCode['relop_or']
+    return opCode['||']
   elif op == '=':
-    return opCode['equal']
+    return opCode['=']
   elif op == '+': 
-    return opCode['plus']
+    return opCode['+']
   elif op == '-': 
-    return opCode['minus']
+    return opCode['-']
   elif op == '*': 
-    return opCode['times']
+    return opCode['*']
   elif op == '/': 
-    return opCode['divide']
+    return opCode['/']
+  elif op == 'GoTo': 
+    return opCode['GoTo']
+  elif op == 'GoToF': 
+    return opCode['GoToF']
+  elif op == 'Return': 
+    return opCode['Return']
+  elif op == 'EndProc': 
+    return opCode['EndProc']
+  elif op == 'End': 
+    return opCode['End']
+  elif op == 'Era': 
+    return opCode['Era']
+  elif op == 'Param': 
+    return opCode['Param']
+  elif op == 'GoSub': 
+    return opCode['GoSub']
+  elif op == 'Ver': 
+    return opCode['Ver']
+  elif op == 'Print': 
+    return opCode['Print']
 
 def getResultType(operand1, operand2, operator):
   one = getTypeString(operand1)

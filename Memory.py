@@ -127,7 +127,7 @@ class Memory:
       return value
 
   # Get array value
-  def getArrayValue(self, value, address):
+  #def getArrayValue(self, value, address):
 
   # Set value
   def setValue(self, value, address):
@@ -189,7 +189,7 @@ class Memory:
           return False
 
   # Set array value
-  def setArrayValue
+  #def setArrayValue
   
   # Initialize constants in memory
   def initializeConstants(self, constants):

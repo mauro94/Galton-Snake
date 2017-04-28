@@ -603,7 +603,7 @@ def p_SA_END_FUNCTION(p):
   # clear function varTable
   functionDirectory[current_scope]['varTable'].clear()
   # create endproc quadruple
-  newQuadruple(quadruples, 'EndProc', None, None, None)
+  newQuadruple(quadruples, getOpCode('EndProc'), None, None, None)
   # update quadruple counter
   cont += 1
 
@@ -617,7 +617,7 @@ def p_SA_END_PROGRAM(p):
   global functionDirectory
 
   # create end quadruple
-  newQuadruple(quadruples, 'end', None, None, None)
+  newQuadruple(quadruples, getOpCode('End'), None, None, None)
   
   c = 0
   for q in quadruples:
@@ -752,7 +752,7 @@ def p_SA_PROGRAM_START(p):
   # create global function in function directory
   functionDirectory[current_scope] = {'type': current_type, 'signature': [], 'parameterCount': 0, 'localVariableCount': 0, 'quadCounter': 0, 'varTable': {}}
   # create first quadruple (jump to main)
-  newQuadruple(quadruples, 'GoTo', None, None, -1)
+  newQuadruple(quadruples, getOpCode('GoTo'), None, None, -1)
   # update quadruple counter
   cont += 1
   # push cont to jumps
@@ -1056,7 +1056,7 @@ def p_SA_COND_1(p):
     # get current operand
     result = stackPop(operands)
     # create quadruple
-    newQuadruple(quadruples, 'GoToF', result, None, -1)
+    newQuadruple(quadruples, getOpCode('GoToF'), result, None, -1)
     # update quadruple counter
     cont += 1
     # push quadruple counter to jumps
@@ -1079,7 +1079,7 @@ def p_SA_COND_3(p):
   # global variables
   global cont
   # Cretae quadruple
-  newQuadruple(quadruples, 'GoTo', None, None, -1)
+  newQuadruple(quadruples, getOpCode('GoTo'), None, None, -1)
   # update quadruple counter
   cont += 1
   # get top jump
@@ -1097,7 +1097,7 @@ def p_SA_COND_4(p):
   # global variables
   global cont
   # Cretae quadruple
-  newQuadruple(quadruples, 'GoTo', None, None, -1)
+  newQuadruple(quadruples, getOpCode('GoTo'), None, None, -1)
   # update quadruple counter
   cont += 1
   # push cont to jumps
@@ -1143,7 +1143,7 @@ def p_SA_LOOP_2(p):
     # get current operand
     result = stackPop(operands)
     # create quadruple
-    newQuadruple(quadruples, 'GoToF', result, None, 0)
+    newQuadruple(quadruples, getOpCode('GoToF'), result, None, 0)
     # update quadruple counter
     cont += 1
     # push quadruple counter to jumps
@@ -1161,7 +1161,7 @@ def p_SA_LOOP_3(p):
   # get jump
   r = stackPop(jumps)
   # Create quadruple
-  newQuadruple(quadruples, 'GoTo', None, None, r)
+  newQuadruple(quadruples, getOpCode('GoTo'), None, None, r)
   # update quadruple counter
   cont += 1
   # fill blank space
@@ -1184,7 +1184,7 @@ def p_SA_CALLFUNC_2(p):
   # update current func call id
   stackPush(callFunc_scopes, funcID)
   # Create ERA quadruple
-  newQuadruple(quadruples, 'era', funcID, None, None)
+  newQuadruple(quadruples, getOpCode('Era'), funcID, None, None)
   # update quadruple counter
   cont += 1
   # reset parameter count
@@ -1210,7 +1210,7 @@ def p_SA_CALLFUNC_3(p):
   # verify type with current parameter in pointer
   if argumentType == functionDirectory[callFunc_scope]['signature'][pointer]:
     # Create action quadruple
-    newQuadruple(quadruples, 'param', argument, None, pointer)
+    newQuadruple(quadruples, getOpCode('Param'), argument, None, pointer)
     # update quadruple counter
     cont += 1
   else:
@@ -1263,7 +1263,7 @@ def p_SA_CALLFUNC_6(p):
   if funcID is None:
     funcID = p[-7]
   # Create gosub quadruple
-  newQuadruple(quadruples, 'GoSub', funcID, None, None)
+  newQuadruple(quadruples, getOpCode('GoSub'), funcID, None, None)
   # update quadruple counter
   cont += 1
 
@@ -1284,7 +1284,7 @@ def p_SA_CALLFUNC_7(p):
   # Verify that function has a return type
   if datatypeCode[funcType] > 0:
   # Generate assignment quadruple to function value
-    newQuadruple(quadruples, '=', funcID, None, tempVarCount[funcType])
+    newQuadruple(quadruples, getOpCode('='), funcID, None, tempVarCount[funcType])
   # Push temporary value to operands
     stackPush(operands, tempVarCount[funcType])
   # Push temporary value to types
@@ -1306,7 +1306,7 @@ def p_SA_RET(p):
   # Validate type of expression with return type of function
   if functionRetType == returnType:
   # Create return quadruple
-    newQuadruple(quadruples, 'Return', None, None, returnValue)
+    newQuadruple(quadruples, getOpCode('Return'), None, None, returnValue)
   # Update quadruple counter
     cont += 1
   else:
@@ -1375,7 +1375,7 @@ def p_SA_ARR_3(p):
   # get superior limit
   sup = functionDirectory[current_scope]['varTable'][varID]['dimension'][current_dim-1]['sup']
   # create quadruple
-  newQuadruple(quadruples, 'Ver', op, inf, sup)
+  newQuadruple(quadruples, getOpCode('Ver'), op, inf, sup)
   # update quadruple counter
   cont += 1
   # get operand
@@ -1393,7 +1393,7 @@ def p_SA_ARR_3(p):
   #cretae special dir
   specialDir = '(' + str(tempVarCount[getTypeString(t)]) + ')'
   # create quadruple
-  newQuadruple(quadruples, '+', aux, constantTable[str(dir)]['address'], specialDir)
+  newQuadruple(quadruples, getOpCode('+'), aux, constantTable[str(dir)]['address'], specialDir)
   # update quadruple counter
   cont += 1
   # push result to operand stack
@@ -1429,7 +1429,7 @@ def p_SA_ARR_5(p):
     # get operand
     op = stackPop(operands) 
     # create quadruple
-    newQuadruple(quadruples, '=', op, None, dir+array_counter)
+    newQuadruple(quadruples, getOpCode('='), op, None, dir+array_counter)
     # update quadruple counter
     cont += 1
     # update array counter
@@ -1455,7 +1455,7 @@ def p_SA_PRINT_DATA(p):
   elif functionDirectory['global']['varTable'].has_key(varID):
     address = functionDirectory['global']['varTable'][varID]['address']
   # Create quadruple
-  newQuadruple(quadruples, 'print', None, None, address)
+  newQuadruple(quadruples, getOpCode('print'), None, None, address)
   # update quadruple counter
   cont += 1
 
@@ -1483,7 +1483,7 @@ if __name__ == '__main__':
       if (yacc.parse(data, tracking = True) == 'OK'):
         print(dirProc)
       # Execute virtual machine
-      execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable)
+      #execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable)
     except EOFError:
         print(EOFError)
   else:
