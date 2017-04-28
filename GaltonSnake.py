@@ -173,6 +173,8 @@ callFunc_scopes = []    # stack of id of function call
 pointers = []           # pointer stack
 array_counter = 0       # value counter array
 array_id = ''           # array id
+current_dfID = ''       # current dataframe id
+funcWithReturn = False  # defines if current function has a return op
 
 # Memory counters
 # 2,000 slots per block, dataframes 10,000 
@@ -601,15 +603,17 @@ def p_SA_DF_FIND_HEADER_ID(p):
 def p_SA_END_FUNCTION(p):
   '''SA_END_FUNCTION : empty'''
   # global variables
-  global functionDirectory, cont
+  global functionDirectory, cont, funcWithReturn
   # clear function varTable
   functionDirectory[current_scope]['varTable'].clear()
   # check if previous quadruple is return
-  if quadruples[cont-1]['operator'] != getOpCode('Return'):
+  if not funcWithReturn:
     # create endproc quadruple
     newQuadruple(quadruples, getOpCode('EndProc'), None, None, None)
     # update quadruple counter
     cont += 1
+    # update return bool
+    funcWithReturn = False
 
 
 
@@ -1309,13 +1313,15 @@ def p_SA_CALLFUNC_7(p):
   stackPop(callFunc_scopes)
   # Verify that function has a return type
   if datatypeCode[funcType] > 0:
-  # Generate assignment quadruple to function value
+    # Generate assignment quadruple to function value
     newQuadruple(quadruples, getOpCode('='), functionDirectory[funcID]['quadCounter'], None, tempVarCount[current_scope][funcType])
-  # Push temporary value to operands
+    # Update quadruple counter
+    cont += 1
+    # Push temporary value to operands
     stackPush(operands, tempVarCount[current_scope][funcType])
-  # Push temporary value to types
+    # Push temporary value to types
     stackPush(types, datatypeCode[funcType])
-  # Update tempVar count
+    # Update tempVar count
     tempVarCount[current_scope][funcType] += 1
 
 # Return value
@@ -1323,7 +1329,7 @@ def p_SA_CALLFUNC_7(p):
 def p_SA_RET(p):
   '''SA_RET : empty'''
   # Global variables
-  global cont
+  global cont, funcWithReturn
   # Temporary variables for type validation
   returnType = stackPop(types)
   functionRetType = datatypeCode[functionDirectory[current_scope]['type']]
@@ -1331,13 +1337,15 @@ def p_SA_RET(p):
   returnValue = stackPop(operands)
   # Validate type of expression with return type of function
   if functionRetType == returnType:
-  # Create return quadruple
+    # Create return quadruple
     newQuadruple(quadruples, getOpCode('Return'), None, None, returnValue)
-  # Update quadruple counter
+    # Update quadruple counter
     cont += 1
   else:
     print("Return type mismatch. Incorrect return. Function: '%s'" % current_scope)
     exit(1)
+  # define function has a return op
+  funcWithReturn = True
 
 
 # --------- EXTRA GRAMMARS / ARRAY QUADRUPPLES ---------
