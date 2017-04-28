@@ -172,31 +172,31 @@ array_id = ''           # array id
 # Memory counters
 # 2,000 slots per block, dataframes 10,000 
 globalVarCount = {}
-globalVarCount['bool'] = 10000
-globalVarCount['int'] = 12000
-globalVarCount['float'] = 14000
-globalVarCount['string'] = 16000
-globalVarCount['dataframe'] = 20000
+globalVarCount['bool'] = getInitDir('global', 'bool')
+globalVarCount['int'] = getInitDir('global', 'int')
+globalVarCount['float'] = getInitDir('global', 'float')
+globalVarCount['string'] = getInitDir('global', 'string')
+globalVarCount['dataframe'] = getInitDir('global', 'dataframe')
 
 localVarCount = {}
-localVarCount['bool'] = 40000
-localVarCount['int'] = 42000
-localVarCount['float'] = 44000
-localVarCount['string'] = 46000
-localVarCount['dataframe'] = 50000
+localVarCount['bool'] = getInitDir('local', 'bool')
+localVarCount['int'] = getInitDir('local', 'int')
+localVarCount['float'] = getInitDir('local', 'float')
+localVarCount['string'] = getInitDir('local', 'string')
+localVarCount['dataframe'] = getInitDir('local', 'dataframe')
 
 tempVarCount = {}
-tempVarCount['bool'] = 60000
-tempVarCount['int'] = 62000
-tempVarCount['float'] = 64000
-tempVarCount['string'] = 66000
-tempVarCount['dataframe'] = 70000
+tempVarCount['bool'] = getInitDir('temp', 'bool')
+tempVarCount['int'] = getInitDir('temp', 'int')
+tempVarCount['float'] = getInitDir('temp', 'float')
+tempVarCount['string'] = getInitDir('temp', 'string')
+tempVarCount['dataframe'] = getInitDir('temp', 'dataframe')
 
 constVarCount = {}
-constVarCount['bool'] = 80000
-constVarCount['int'] = 82000
-constVarCount['float'] = 84000
-constVarCount['string'] = 86000
+constVarCount['bool'] = getInitDir('constant', 'bool')
+constVarCount['int'] = getInitDir('constant', 'int')
+constVarCount['float'] = getInitDir('constant', 'float')
+constVarCount['string'] = getInitDir('constant', 'string')
 
 # Starting grammar
 start = 'PROGRAM'

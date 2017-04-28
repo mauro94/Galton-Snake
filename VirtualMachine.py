@@ -1,6 +1,7 @@
 from Cube import *
 from GaltonSnake import *
 from Memory import *
+from Functions import *
 import csv
 
 def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constants):
@@ -10,6 +11,9 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
   # Memory map
   memory = Memory('memory', globalVarCount, localVarCount, tempVarCount, constVarCount)
   memory.initializeConstants(constants)
+
+  # TODO: Initialize AR - main
+  # Push to stack
 
   # Quadruple counter
   quad_count = 0
@@ -230,8 +234,8 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
     # ERA
     # elif q['operator'] == 'era':
-    # TODO: create memory of new function
-    # TODO: check if there is existing memory of !main function
+    # TODO: create AR of new function
+    # TODO: push to stack
 
     # Read
     elif q['operator'] == 'read':
