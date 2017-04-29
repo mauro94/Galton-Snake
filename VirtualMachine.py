@@ -13,7 +13,8 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
   memory.initializeConstants(constants)
 
   # Create memory for main function
-  memory.createActivationRecord(localVarCount['main'], tempVarCount['main'])
+  main = memory.createActivationRecord(localVarCount['main'], tempVarCount['main'])
+  memory.changeActivationRecord(main)
 
   # Quadruple counter
   quad_count = 0
@@ -24,8 +25,11 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
   # Pending return value
   return_value = 0
 
+  # Call stack
+  call_stack = []
+
   # Iterate all quadruples
-  while (quad_count <= len(quadruples)):
+  while (quad_count < len(quadruples)):
     # Get current instruction
     q = quadruples[quad_count]
 
@@ -35,7 +39,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     resultAddress = q['result']
     operator = getOpString(q['operator'])
 
-    print (q['operator'], leftOp, rightOp, resultAddress)
+    # print (q['operator'], leftOp, rightOp, resultAddress)
 
     # Arithmetic
     # Addition
@@ -210,10 +214,12 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     # Other operators
     # Param
     elif operator == 'Param':
-      value = memory.getParamValue(leftOp)
-      # print value
-      # print resultAddress
+      # Get value from current mem stack
+      value = memory.getValue(leftOp)
+      # HACKY AF
+      stackPush(memory.memory_stack, stackTop(call_stack))
       memory.setValue(value, resultAddress)
+      stackPop(memory.memory_stack)
 
     # Return
     elif operator == 'Return':
@@ -236,6 +242,9 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       stackPush(pending_quads, quad_count + 1)
       # Modify quadruple counter to return to target quad
       quad_count = leftOp - 1
+      # Change activation record
+      ar = stackPop(call_stack)
+      stackPush(memory.memory_stack, ar)
 
     # GotoF
     elif operator == 'GoToF':
@@ -257,7 +266,9 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     # ERA
     elif operator == 'Era':
       # Create memory for any function
-      memory.createActivationRecord(localVarCount[leftOp], tempVarCount[leftOp])
+      ar = memory.createActivationRecord(localVarCount[leftOp], tempVarCount[leftOp])
+      # Push to call stack
+      stackPush(call_stack, ar)
 
     # Read
     elif operator == 'Read':
@@ -281,7 +292,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     # END
     elif operator == 'End':
       memory.removeActivationRecord()
-      exit(1)
+      # exit(1)
 
     else:
       print operator

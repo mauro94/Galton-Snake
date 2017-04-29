@@ -30,8 +30,11 @@ class Memory:
   # Generate function memory
   # And push on to stack
   def createActivationRecord(self, local_count, temp_count):
-    ar = ActivationRecord(local_count, temp_count)
-    stackPush(self.memory_stack, ar)
+    return ActivationRecord(local_count, temp_count)
+
+  # Change activation record
+  def changeActivationRecord(self, activationRecord):
+    stackPush(self.memory_stack, activationRecord)
 
   # Remove function memory on top of stack
   def removeActivationRecord(self):
