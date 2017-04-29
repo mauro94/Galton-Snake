@@ -207,7 +207,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       lower_lim = rightOp
       upper_lim = resultAddress
 
-      if not between(value, lower_lim, upper_lim):
+      if not between(value, lower_lim, upper_lim + 1):
         print('Index out of bounds')
         exit(1)
 

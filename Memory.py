@@ -96,12 +96,12 @@ class Memory:
     if isinstance(address, basestring):
       # Check if pointer already has a value
       pointer_address = self.getValue(int(address[1:-1]))
-      # Check if it is not an address
-      if pointer_address < getInitDir('global', 'bool'):
-        self.setValue(value, int(address[1:-1]))
-      # Set value of pointer address
-      else:
+      # Check if it is an address
+      if pointer_address > getInitDir('global', 'bool'):
         self.setValue(value, pointer_address)
+      # Set value of pointer
+      else:
+        self.setValue(value, int(address[1:-1]))
       return
 
     scope = getScope(address)
@@ -169,7 +169,20 @@ class Memory:
   def bindColDataframe(self, col1, col2):
     print 'Bind columns'
 
-  def reallocateMemory(self, dataframe):
-    print 'Reallocate memory'
+  def reallocateMemory(self, address, old_size, new_size):
+    scope = getScope(address)
+
+    if scope == 'global':
+      location = address - getInitDir('global', 'dataframe')
+      # New data allocation
+      for i in range(new_size):
+        self.global_dataframes.append(self.global_dataframes[location+i])
+
+      new_location = address + len(self.global_dataframes) - location
+
+      # Point to new data
+      for i in range(old_size):
+        self.global_dataframes[location+i] = '(' + str(new_location + i) + ')'
+
 
   # TODO: understand get value for data frames
