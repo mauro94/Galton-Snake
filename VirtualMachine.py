@@ -13,7 +13,8 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
   memory.initializeConstants(constants)
 
   # Create memory for main function
-  memory.createActivationRecord(localVarCount['main'], tempVarCount['main'])
+  main = memory.createActivationRecord(localVarCount['main'], tempVarCount['main'])
+  memory.changeActivationRecord(main)
 
   # Quadruple counter
   quad_count = 0
@@ -21,8 +22,14 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
   # Pending quads
   pending_quads = []
 
+  # Pending return value
+  return_value = 0
+
+  # Call stack
+  call_stack = []
+
   # Iterate all quadruples
-  while (quad_count <= len(quadruples)):
+  while (quad_count < len(quadruples)):
     # Get current instruction
     q = quadruples[quad_count]
 
@@ -32,9 +39,11 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     resultAddress = q['result']
     operator = getOpString(q['operator'])
 
-    print (q['operator'], leftOp, rightOp, resultAddress)
+    # print (q['operator'], leftOp, rightOp, resultAddress)
 
-    # Arithmetic
+# =========================================================
+# Arithmetic
+# =========================================================
     # Addition
     if operator == '+':
       # Get value from memory
@@ -96,7 +105,10 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Store value in memory
       memory.setValue(leftOpValue, resultAddress)
 
-    # Comparison
+# =========================================================
+# Comparison
+# =========================================================
+
     # <, >, <=, >=, ==, !=, &&, ||
     elif operator == '<':
       # Get value from memory
@@ -186,30 +198,89 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Store value in memory
       memory.setValue(resultValue, resultAddress)
 
-    #Arrays
+# =========================================================
+# Arrays
+# =========================================================
+
     elif operator == 'Ver':
       value = memory.getValue(leftOp)
-      lower_lim = memory.getValue(rightOp)
-      upper_lim = memory.getValue(resultAddress)
+      lower_lim = rightOp
+      upper_lim = resultAddress
 
-      if between(value, lower_lim, upper_lim + 1):
-        return True
-      else:
+      if not between(value, lower_lim, upper_lim):
         print('Index out of bounds')
         exit(1)
 
-    # Printing
+# =========================================================
+# Dataframes
+# =========================================================
+
+    # Correlations
+    elif operator == 'Correlate':
+      print 'Correlate'
+
+    elif operator == 'Corr_Headers':
+      print 'Correlate headers'
+
+# =========================================================
+# Printing
+# =========================================================
+
     elif operator == 'Print':
       value = memory.getValue(resultAddress)
 
       print(value)
 
-    # Other operators
+    # Printing dataframes
+
+    elif operator == 'Print_Col':
+      print 'Col'
+
+    elif operator == 'Print_Row':
+      print 'Row'
+
+    elif operator == 'Print_DF':
+      print 'Dataframe'
+
+    elif operator == 'Print_Cell':
+      print 'Print_Cell'
+
+    elif operator == 'Print_Data':
+      print 'Print_Data'
+
+    elif operator == 'Print_Headers':
+      print 'Print_Headers'
+
+    elif operator == 'Print_Tags':
+      print 'Print_Tags'
+
+# =========================================================
+# Functions
+# =========================================================
+
     # Param
-    # elif operator == 'param':
+    elif operator == 'Param':
+      # Get value from current mem stack
+      value = memory.getValue(leftOp)
+      # HACKY AF
+      stackPush(memory.memory_stack, stackTop(call_stack))
+      memory.setValue(value, resultAddress)
+      stackPop(memory.memory_stack)
 
     # Return
-    # elif operator == 'Return':
+    elif operator == 'Return':
+      # Temporal return value
+      return_value = memory.getValue(resultAddress)
+      # Remove activation record
+      memory.removeActivationRecord()
+      # Get to return assign quad
+      quad_count = stackPop(pending_quads)
+      # Assign value
+      # Get current instruction
+      q = quadruples[quad_count]
+      # Get values of operands and result address
+      resultAddress = q['result']
+      memory.setValue(return_value, resultAddress)
 
     # GoSub
     elif operator == 'GoSub':
@@ -217,8 +288,14 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       stackPush(pending_quads, quad_count + 1)
       # Modify quadruple counter to return to target quad
       quad_count = leftOp - 1
+      # Change activation record
+      ar = stackPop(call_stack)
+      stackPush(memory.memory_stack, ar)
 
-    # GotoF
+# =========================================================
+# Go To operators
+# =========================================================
+
     elif operator == 'GoToF':
       # Get conditional result
       result = memory.getValue(leftOp)
@@ -235,12 +312,26 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Modify quadruple counter to return to target quad
       quad_count = target - 1
 
-    # ERA
+# =========================================================
+# Memory
+# =========================================================
     elif operator == 'Era':
       # Create memory for any function
-      memory.createActivationRecord(localVarCount[leftOp], tempVarCount[leftOp])
+      ar = memory.createActivationRecord(localVarCount[leftOp], tempVarCount[leftOp])
+      # Push to call stack
+      stackPush(call_stack, ar)
 
-    # Read
+    elif operator == 'Prep':
+      # Create memory for dataframe
+      # TODO: get dataframe info
+      # DATAFRAMES!!
+      print 'Prep'
+
+
+# =========================================================
+# Input
+# =========================================================
+
     elif operator == 'Read':
       # Get filename
       filename = memory.getValue(resultAddress)
@@ -251,20 +342,24 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
       print matrix
 
+      # Add every column to a new matrix element
+      # for m in matrix:
+
+
     # TODO: check what matrix is and store in memory
     # TODO: generate memory for DF
 
-    # ENDPROC
+# =========================================================
+# Procedure end
+# =========================================================
     elif operator == 'EndProc':
-      # TODO: MANAGE RETURN OF INVESTMENT!!
-      # INVEST IN MEMES!!
       memory.removeActivationRecord()
       quad_count = stackPop(pending_quads) - 1
 
     # END
     elif operator == 'End':
       memory.removeActivationRecord()
-      exit(1)
+      # exit(1)
 
     else:
       print operator

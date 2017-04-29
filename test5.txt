@@ -1,17 +1,15 @@
-func int func1(int a, int b): {
-  return a + b;
+func int substract(int a): {
+  print a;
+  if (a <= 0) {
+    return 0;
+  }
+  else {
+    return substract(a - 1);
+  }
 }
 
 main: {
-	float a,b;
-	
-  b = 6.0;
-  a = 2.0;
-
-  if (a < b) {
-    a = b / a;
-  }
-
-  a = func1(7, 4);
+  int a;
+  a = substract(10);
   print a;
 }

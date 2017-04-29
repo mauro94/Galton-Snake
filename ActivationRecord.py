@@ -3,18 +3,18 @@ from Functions import *
 class ActivationRecord:
   def __init__(self, local_variables, temp_variables):
     # Local variables
-    self.local_bools      = range(local_variables['bool'] - getInitDir('local','bool'))
-    self.local_ints       = range(local_variables['int'] - getInitDir('local','int'))
-    self.local_floats     = range(local_variables['float'] - getInitDir('local','float'))
-    self.local_strings    = range(local_variables['string'] - getInitDir('local','string'))
-    self.local_dataframes = range(local_variables['dataframe'] + 1)    
+    self.local_bools      = [None] * (local_variables['bool'] - getInitDir('local','bool'))
+    self.local_ints       = [None] * (local_variables['int'] - getInitDir('local','int'))
+    self.local_floats     = [None] * (local_variables['float'] - getInitDir('local','float'))
+    self.local_strings    = [None] * (local_variables['string'] - getInitDir('local','string'))
+    self.local_dataframes = [None] * (local_variables['dataframe'] - getInitDir('local','dataframe'))
 
     # Temporary variables
-    self.temp_bools      = range(temp_variables['bool'] - getInitDir('temp','bool'))
-    self.temp_ints       = range(temp_variables['int'] - getInitDir('temp','int'))
-    self.temp_floats     = range(temp_variables['float'] - getInitDir('temp','float'))
-    self.temp_strings    = range(temp_variables['string'] - getInitDir('temp','string'))
-    self.temp_dataframes = range(temp_variables['dataframe'])
+    self.temp_bools      = [None] * (temp_variables['bool'] - getInitDir('temp','bool'))
+    self.temp_ints       = [None] * (temp_variables['int'] - getInitDir('temp','int'))
+    self.temp_floats     = [None] * (temp_variables['float'] - getInitDir('temp','float'))
+    self.temp_strings    = [None] * (temp_variables['string'] - getInitDir('temp','string'))
+    self.temp_dataframes = [None] * (temp_variables['dataframe'] - getInitDir('temp', 'dataframe'))
 
   def getValue(self, address):
     scope = getScope(address)
@@ -60,36 +60,48 @@ class ActivationRecord:
         # Get list[address - initial size]
         if varType == 'bool':
           self.local_bools[address - getInitDir('local','bool')] = value
-          return True
         elif varType == 'int':
           self.local_ints[address - getInitDir('local','int')] = value
-          return True
         elif varType == 'float':
           self.local_floats[address - getInitDir('local','float')] = value
-          return True
         elif varType == 'string':
           self.local_strings[address - getInitDir('local','string')] = value
-          return True
-        else:
-          return False
     elif scope == 'temp':
       # Get type
         varType = getType(address, scope)
         # Get list[address - initial size]
         if varType == 'bool':
           self.temp_bools[address - getInitDir('temp','bool')] = value
-          return True
         elif varType == 'int':
           self.temp_ints[address - getInitDir('temp','int')] = value
-          return True
         elif varType == 'float':
           self.temp_floats[address - getInitDir('temp','float')] = value
-          return True
         elif varType == 'string':
           self.temp_strings[address - getInitDir('temp','string')] = value
-          return True
-        else:
-          return False
     else:
       print 'Unknown address on setting value'
       # exit(1)
+
+  # Dataframe memory management
+  def generateMemory(self, dataframe, address):
+    # Calculate offset / size
+    offset = 0;
+    end_address = address + offset
+
+    # Check if df is TOO BIG
+    if not between(end_address, getInitDir('local', 'dataframe'), getInitDir('temp', 'bool')):
+      print 'Memory limit reached'
+      exit(1)
+
+    # TODO: generate memory
+
+  def bindRowDataframe(self, row1, row2):
+    print 'Bind rows'
+
+  def bindColDataframe(self, col1, col2):
+    print 'Bind columns'
+
+  def reallocateMemory(self, dataframe):
+    print 'Reallocate memory'
+
+  # TODO: understand get value for data frames

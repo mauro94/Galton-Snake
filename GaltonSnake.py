@@ -3,6 +3,7 @@
 # Patricio Sanchez A01191893
 
 import sys
+import time
 from collections import deque
 sys.path.insert(0, "../..")
 
@@ -251,8 +252,8 @@ def p_CALLFUNC_EXP(p):
     '''CALLFUNC_EXP : id SA_FIND_FUNC_ID lPar SA_CALLFUNC_2 CALLFUNC_PARAMS rPar SA_CALLFUNC_5 SA_CALLFUNC_6 SA_CALLFUNC_7'''
 
 def p_CALLFUNC_PARAMS(p):
-    '''CALLFUNC_PARAMS : EXP SA_CALLFUNC_3 coma SA_CALLFUNC_4 CALLFUNC_PARAMS
-                       | EXP SA_CALLFUNC_3
+    '''CALLFUNC_PARAMS : SA_FAKE_BOTTOM EXP SA_FAKE_BOTTOM_REMOVE SA_CALLFUNC_3 coma SA_CALLFUNC_4 CALLFUNC_PARAMS
+                       | SA_FAKE_BOTTOM EXP SA_FAKE_BOTTOM_REMOVE SA_CALLFUNC_3
                        | empty'''
 
 def p_CONDITION(p):
@@ -1323,6 +1324,7 @@ def p_SA_CALLFUNC_6(p):
   if funcID is None:
     funcID = p[-7]
   # Create gosub quadruple
+  print functionDirectory[funcID]['quadCounter']
   newQuadruple(quadruples, getOpCode('GoSub'), functionDirectory[funcID]['quadCounter'], None, None)
   # update quadruple counter
   cont += 1
@@ -1676,8 +1678,13 @@ if __name__ == '__main__':
       # Parse the data
       if (yacc.parse(data, tracking = True) == 'OK'):
         print(dirProc)
+      # TIME THIS MOTHERFUCKER
+      tiempo = time.time()
       # Execute virtual machine
       execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable)
+      # PRINT TIME
+      print time.time() - tiempo
+      exit(1)
     except EOFError:
         print(EOFError)
   else:

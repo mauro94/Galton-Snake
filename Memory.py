@@ -12,17 +12,17 @@ class Memory:
 
     # Creating lists with the amount of variables needed to be stored
     # Global variables
-    self.global_bools      = range(global_variables['bool'] - getInitDir('global', 'bool'))
-    self.global_ints       = range(global_variables['int'] - getInitDir('global', 'int'))
-    self.global_floats     = range(global_variables['float'] - getInitDir('global', 'float'))
-    self.global_strings    = range(global_variables['string'] - getInitDir('global', 'string'))
-    self.global_dataframes = range(global_variables['dataframe'] - getInitDir('global', 'dataframe'))
+    self.global_bools      = [None] * (global_variables['bool'] - getInitDir('global', 'bool'))
+    self.global_ints       = [None] * (global_variables['int'] - getInitDir('global', 'int'))
+    self.global_floats     = [None] * (global_variables['float'] - getInitDir('global', 'float'))
+    self.global_strings    = [None] * (global_variables['string'] - getInitDir('global', 'string'))
+    self.global_dataframes = [None] * (global_variables['dataframe'] - getInitDir('global', 'dataframe'))
 
     # Constants
-    self.const_bools      = range(const_variables['bool'] - getInitDir('constant', 'bool'))
-    self.const_ints       = range(const_variables['int'] - getInitDir('constant', 'int'))
-    self.const_floats     = range(const_variables['float'] - getInitDir('constant', 'float'))
-    self.const_strings    = range(const_variables['string'] - getInitDir('constant', 'string'))
+    self.const_bools      = [None] * (const_variables['bool'] - getInitDir('constant', 'bool'))
+    self.const_ints       = [None] * (const_variables['int'] - getInitDir('constant', 'int'))
+    self.const_floats     = [None] * (const_variables['float'] - getInitDir('constant', 'float'))
+    self.const_strings    = [None] * (const_variables['string'] - getInitDir('constant', 'string'))
 
     # Memory Stack
     self.memory_stack = []
@@ -30,8 +30,11 @@ class Memory:
   # Generate function memory
   # And push on to stack
   def createActivationRecord(self, local_count, temp_count):
-    ar = ActivationRecord(local_count, temp_count)
-    stackPush(self.memory_stack, ar)
+    return ActivationRecord(local_count, temp_count)
+
+  # Change activation record
+  def changeActivationRecord(self, activationRecord):
+    stackPush(self.memory_stack, activationRecord)
 
   # Remove function memory on top of stack
   def removeActivationRecord(self):
@@ -39,6 +42,14 @@ class Memory:
 
   # Get value
   def getValue(self, address):
+    if isinstance(address, basestring):
+      value = self.getValue(int(address[1:-1]))
+      # Check if value address has a value
+      value_address = self.getValue(value)
+      if not value_address == None:
+        return value_address
+      return value
+
     scope = getScope(address)
 
     if scope == 'global':
@@ -80,11 +91,19 @@ class Memory:
       # Return
       return value
 
-  # Get array value
-  # def getArrayValue(self, value, address):
-
   # Set value
   def setValue(self, value, address):
+    if isinstance(address, basestring):
+      # Check if pointer already has a value
+      pointer_address = self.getValue(int(address[1:-1]))
+      # Check if it is not an address
+      if pointer_address < getInitDir('global', 'bool'):
+        self.setValue(value, int(address[1:-1]))
+      # Set value of pointer address
+      else:
+        self.setValue(value, pointer_address)
+      return
+
     scope = getScope(address)
 
     if scope == 'global':
@@ -93,33 +112,22 @@ class Memory:
       # Get list[address - initial size]
       if varType == 'bool':
         self.global_bools[address - getInitDir('global','bool')] = value
-        return True
       elif varType == 'int':
         self.global_ints[address - getInitDir('global','int')] = value
-        return True
       elif varType == 'float':
         self.global_floats[address - getInitDir('global','float')] = value
-        return True
       elif varType == 'string':
         self.global_strings[address - getInitDir('global','string')] = value
-        return True
-      else:
-        return False
     elif scope == 'local':
       # Get function memory
       activationRecord = stackTop(self.memory_stack)
       # Get true / false if value was modified and return
-      result = activationRecord.setValue(value, address)
-      return result
+      activationRecord.setValue(value, address)
     elif scope == 'temp':
       # Get function memory
       activationRecord = stackTop(self.memory_stack)
       # Get true / false if value was modified and return
-      result = activationRecord.setValue(value, address)
-      return result
-
-  # Set array value
-  # def setArrayValue
+      activationRecord.setValue(value, address)
   
   # Initialize constants in memory
   def initializeConstants(self, constants):
@@ -134,4 +142,34 @@ class Memory:
       elif value['type'] == 4:
         self.const_strings[value['address'] - getInitDir('constant','string')] = value['val']
 
-    # print self.const_ints
+  # Dataframe memory management
+  def generateMemory(self, dataframe, address):
+    # Calculate offset / size
+    offset = 0;
+    end_address = address + offset
+
+    scope = getScope(address)
+
+    if scope == 'global':
+      # Check if dataframe is TOO big
+      if not between(end_address, getInitDir('global', 'dataframe'), getInitDir('local', 'bool')):
+        print 'Memory limit reached'
+        exit(1)
+
+      # MAKE MEMORY GREAT AGAIN!
+
+    elif scope == 'local':
+      activationRecord = stackTop(self.memory_stack)
+      activationRecord.generateMemory(dataframe, address)
+
+
+  def bindRowDataframe(self, row1, row2):
+    print 'Bind rows'
+
+  def bindColDataframe(self, col1, col2):
+    print 'Bind columns'
+
+  def reallocateMemory(self, dataframe):
+    print 'Reallocate memory'
+
+  # TODO: understand get value for data frames
