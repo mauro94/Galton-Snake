@@ -21,6 +21,9 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
   # Pending quads
   pending_quads = []
 
+  # Pending return value
+  return_value = 0
+
   # Iterate all quadruples
   while (quad_count <= len(quadruples)):
     # Get current instruction
@@ -189,8 +192,8 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     #Arrays
     elif operator == 'Ver':
       value = memory.getValue(leftOp)
-      lower_lim = memory.getValue(rightOp)
-      upper_lim = memory.getValue(resultAddress)
+      lower_lim = rightOp
+      upper_lim = resultAddress
 
       if between(value, lower_lim, upper_lim + 1):
         return True
@@ -206,10 +209,26 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
     # Other operators
     # Param
-    # elif operator == 'param':
+    elif operator == 'Param':
+      value = memory.getParamValue(leftOp)
+      # print value
+      # print resultAddress
+      memory.setValue(value, resultAddress)
 
     # Return
-    # elif operator == 'Return':
+    elif operator == 'Return':
+      # Temporal return value
+      return_value = memory.getValue(resultAddress)
+      # Remove activation record
+      memory.removeActivationRecord()
+      # Get to return assign quad
+      quad_count = stackPop(pending_quads)
+      # Assign value
+      # Get current instruction
+      q = quadruples[quad_count]
+      # Get values of operands and result address
+      resultAddress = q['result']
+      memory.setValue(return_value, resultAddress)
 
     # GoSub
     elif operator == 'GoSub':
@@ -256,8 +275,6 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
     # ENDPROC
     elif operator == 'EndProc':
-      # TODO: MANAGE RETURN OF INVESTMENT!!
-      # INVEST IN MEMES!!
       memory.removeActivationRecord()
       quad_count = stackPop(pending_quads) - 1
 
