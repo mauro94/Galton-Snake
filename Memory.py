@@ -42,6 +42,10 @@ class Memory:
 
   # Get value
   def getValue(self, address):
+    if isinstance(address, basestring):
+      value = self.getValue(address[1:-1])
+      return value
+
     scope = getScope(address)
 
     if scope == 'global':
@@ -83,11 +87,12 @@ class Memory:
       # Return
       return value
 
-  # Get array value
-  # def getArrayValue(self, value, address):
-
   # Set value
   def setValue(self, value, address):
+    if isinstance(address, basestring):
+      self.setValue(value, address[1:-1])
+      return
+
     scope = getScope(address)
 
     if scope == 'global':
@@ -96,33 +101,22 @@ class Memory:
       # Get list[address - initial size]
       if varType == 'bool':
         self.global_bools[address - getInitDir('global','bool')] = value
-        return True
       elif varType == 'int':
         self.global_ints[address - getInitDir('global','int')] = value
-        return True
       elif varType == 'float':
         self.global_floats[address - getInitDir('global','float')] = value
-        return True
       elif varType == 'string':
         self.global_strings[address - getInitDir('global','string')] = value
-        return True
-      else:
-        return False
     elif scope == 'local':
       # Get function memory
       activationRecord = stackTop(self.memory_stack)
       # Get true / false if value was modified and return
-      result = activationRecord.setValue(value, address)
-      return result
+      activationRecord.setValue(value, address)
     elif scope == 'temp':
       # Get function memory
       activationRecord = stackTop(self.memory_stack)
       # Get true / false if value was modified and return
-      result = activationRecord.setValue(value, address)
-      return result
-
-  # Set array value
-  # def setArrayValue
+      activationRecord.setValue(value, address)
   
   # Initialize constants in memory
   def initializeConstants(self, constants):

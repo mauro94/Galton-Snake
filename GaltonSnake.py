@@ -1513,11 +1513,11 @@ if __name__ == '__main__':
       if (yacc.parse(data, tracking = True) == 'OK'):
         print(dirProc)
       # TIME THIS MOTHERFUCKER
-      # tiempo = time.time()
+      tiempo = time.time()
       # Execute virtual machine
       execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable)
       # PRINT TIME
-      # print time.time() - tiempo
+      print time.time() - tiempo
       exit(1)
     except EOFError:
         print(EOFError)
