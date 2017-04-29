@@ -659,7 +659,10 @@ def p_SA_END_PROGRAM(p):
     c += 1
 
   print functionDirectory
-  print localVarCount
+  print ''
+  print constantTable
+  print ''
+  print tempVarCount
 
   # clear function dictionary
   functionDirectory.clear() 
@@ -1324,7 +1327,6 @@ def p_SA_CALLFUNC_6(p):
   if funcID is None:
     funcID = p[-7]
   # Create gosub quadruple
-  print functionDirectory[funcID]['quadCounter']
   newQuadruple(quadruples, getOpCode('GoSub'), functionDirectory[funcID]['quadCounter'], None, None)
   # update quadruple counter
   cont += 1
@@ -1491,6 +1493,8 @@ def p_SA_ARR_16(p):
     cont += 1
     # push to operands
     stackPush(operands, tempVarCount[current_scope][getTypeString(getTypeCode('int'))])
+    # push type
+    stackPush(types, getTypeCode('int'))
     #increase constant variable counter
     tempVarCount[current_scope][getTypeString(getTypeCode('int'))] += 1
     # update R
@@ -1507,6 +1511,8 @@ def p_SA_ARR_16(p):
     cont += 1
     # push to operands
     stackPush(operands, tempVarCount[current_scope][getTypeString(getTypeCode('int'))])
+    # push type
+    stackPush(types, getTypeCode('int'))
     #increase constant variable counter
     tempVarCount[current_scope][getTypeString(getTypeCode('int'))] += 1
 
@@ -1543,13 +1549,15 @@ def p_SA_ARR_18(p):
     #increase constant variable counter
     constVarCount[getTypeString(getTypeCode('int'))] += 1
   # create quadruple
-  newQuadruple(quadruples, getOpCode('+'), aux1, dir, str(tempVarCount[current_scope][getTypeString(getTypeCode('int'))]))
+  newQuadruple(quadruples, getOpCode('+'), aux1, constantTable[str(dir)]['address'], tempVarCount[current_scope][getTypeString(getTypeCode('int'))])
   # update quadruple counter
   cont += 1
   #cretae special dir
   specialDir = '(' + str(tempVarCount[current_scope][getTypeString(getTypeCode('int'))]) + ')'
   # push result to operand stack
   stackPush(operands, specialDir)
+  # push type
+  stackPush(types, getTypeCode('int'))
   # update tempVar count
   tempVarCount[current_scope][getTypeString(getTypeCode('int'))] += 1
   # pop dimensions stack
