@@ -1424,12 +1424,12 @@ def p_SA_ARR_3(p):
     constantTable[str(dir)] = {'type': t, 'address': constVarCount[getTypeString(t)], 'val': dir}
     #increase constant variable counter
     constVarCount[getTypeString(t)] += 1
-  #cretae special dir
-  specialDir = '(' + str(tempVarCount[current_scope][getTypeString(t)]) + ')'
   # create quadruple
-  newQuadruple(quadruples, getOpCode('+'), aux, constantTable[str(dir)]['address'], specialDir)
+  newQuadruple(quadruples, getOpCode('+'), aux, constantTable[str(dir)]['address'], str(tempVarCount[current_scope][getTypeString(t)]))
   # update quadruple counter
   cont += 1
+  #cretae special dir
+  specialDir = '(' + str(tempVarCount[current_scope][getTypeString(t)]) + ')'
   # push result to operand stack
   stackPush(operands, specialDir)
   # push type result to type stack
