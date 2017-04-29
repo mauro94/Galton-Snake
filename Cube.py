@@ -66,9 +66,9 @@ opCode = {
   # Print
   'Print' : 209,
   # Read File
-  'ReadFile' : 300,
-  # Prep DF
-  'PrepDF' : 300
+  'ReadFile' : 300, #leer un file
+  # Prep Dataframe
+  'PrepDataframe' : 301# perparar memporia para leer un dataframe
 }
 
 cube = {}
