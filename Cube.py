@@ -88,7 +88,11 @@ opCode = {
   # Print tags
   'ColBind' : 310,
   # Print tags
-  'RowBind' : 311
+  'RowBind' : 311,
+  # Print tags
+  'PrintDf' : 312,
+  # Print tags
+  'PrintDfData' : 313
 }
 
 cube = {}
@@ -289,6 +293,10 @@ def getOpString (op):
     return 'ColBind' 
   elif op == 311:
     return 'RowBind' 
+  elif op == 312:
+    return 'PrintDf' 
+  elif op == 313:
+    return 'PrintDfData' 
 
 def getOpCode (op):
   if op == '>':
@@ -361,6 +369,10 @@ def getOpCode (op):
     return opCode['ColBind']
   elif op == 'RowBind':
     return opCode['RowBind']
+  elif op == 'PrintDf':
+    return opCode['PrintDf']
+  elif op == 'PrintDfData':
+    return opCode['PrintDfData']
 
 def getResultType(operand1, operand2, operator):
   one = getTypeString(operand1)

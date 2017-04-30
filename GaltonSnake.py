@@ -342,6 +342,12 @@ def p_PRINT_COL(p):
 def p_PRINT_DATA(p):
     '''PRINT_DATA : print SUPER_EXPRESSION SA_PRINT_DATA semi_colon '''
 
+def p_PRINT_DF(p):
+    '''PRINT_DF : printDf id SA_FIND_DF SA_DF_PRINT semi_colon '''
+
+def p_PRINT_DF_DATA(p):
+    '''PRINT_DF_DATA : printData id SA_FIND_DF SA_DF_PRINTTAGS_1 semi_colon '''
+
 def p_PRINT_HEADERS(p):
     '''PRINT_HEADERS : printHeaders id SA_FIND_DF SA_DF_PRINTHEADERS_1 semi_colon '''
 
@@ -357,7 +363,9 @@ def p_PRINT(p):
              | PRINT_DATA
              | PRINT_HEADERS
              | PRINT_CELL
-             | PRINT_ROW'''
+             | PRINT_ROW
+             | PRINT_DF
+             | PRINT_DF_DATA'''
 
 def p_PROGRAM(p):
     '''PROGRAM : SA_PROGRAM_START INSTANTIATE PROGRAM_FUNCTIONS main SA_MAIN_START colon lBr SA_VAR_COUNTERS INSTANTIATE BLOCK rBr SA_END_PROGRAM'''
@@ -1859,6 +1867,50 @@ def p_SA_DF_PRINTTAGS_1(p):
     constVarCount['string'] += 1
   # Create quadruple
   newQuadruple(quadruples, getOpCode('PrintTags'), None, None, constantTable[special_df]['address'])
+  # update quadruple counter
+  cont += 1
+
+
+# Print df declared
+# Create quadruple
+def p_SA_DF_PRINT(p):
+  '''SA_DF_PRINT : empty'''
+  # Globals
+  global cont
+  # get df id
+  current_df = p[-2]
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # verify if string is in constants table
+  if not constantTable.has_key(str(special_df)): 
+    #create constant
+    constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('PrintDf'), None, None, constantTable[special_df]['address'])
+  # update quadruple counter
+  cont += 1
+
+
+# Print df data declared
+# Create quadruple
+def p_SA_DF_PRINT_DATA(p):
+  '''SA_DF_PRINT_DATA : empty'''
+  # Globals
+  global cont
+  # get df id
+  current_df = p[-2]
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # verify if string is in constants table
+  if not constantTable.has_key(str(special_df)): 
+    #create constant
+    constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('PrintDfData'), None, None, constantTable[special_df]['address'])
   # update quadruple counter
   cont += 1
   
