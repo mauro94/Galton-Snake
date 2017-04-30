@@ -1692,6 +1692,25 @@ def p_SA_DF_BINDINGS_1(p):
   global current_df
   # Get df id
   current_df = p[-2]
+  # get type of bind
+  t_bind = p[-4]
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # verify if string is in constants table
+  if not constantTable.has_key(str(special_df)):
+    #create constant
+    constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+  if t_bind == 'cbind':
+    # Create quadruple
+    newQuadruple(quadruples, getOpCode('ColBind'), None, None, constantTable[special_df]['address'])
+  else:
+    # Create quadruple
+    newQuadruple(quadruples, getOpCode('RowBind'), None, None, constantTable[special_df]['address'])
+  # update quadruple counter
+  cont += 1
+
 
 # Access to row or column declared
 # Create access quadruple
@@ -1775,7 +1794,7 @@ def p_SA_DF_PRINTCELL_3(p):
     #increase constant variable counter
     constVarCount['int'] += 1
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('PrintCell'), constantTable[special_df]['address'], 1, constantTable[special_cell]['address'])
+  newQuadruple(quadruples, getOpCode('PrintCell'), constantTable[special_df]['address'], None, constantTable[special_cell]['address'])
   # update quadruple counter
   cont += 1
 
@@ -1867,7 +1886,7 @@ def p_SA_DF_HEADER(p):
     #increase constant variable counter
     constVarCount['string'] += 1
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], 2, constantTable[headerID]['address'])
+  newQuadruple(quadruples, getOpCode('AccessHeader'), constantTable[special_df]['address'], None, constantTable[headerID]['address'])
   # update quadruple counter
   cont += 1
 
