@@ -7,4 +7,7 @@ main: {
 	printRow var6.row(2);
 	printHeaders var6;
 	printTags var6;
+
+	correlate(var5, var6, 0.9);
+	correlateHeaders(var5$a, var6$a, 0.9);
 }

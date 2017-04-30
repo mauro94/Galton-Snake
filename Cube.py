@@ -80,7 +80,11 @@ opCode = {
   # Print cell
   'PrintRow' : 306,
   # Print tags
-  'PrintTags' : 306
+  'PrintTags' : 306,
+  # Print tags
+  'Corr' : 308,
+  # Print tags
+  'CorrHeaders' : 308
 }
 
 cube = {}
@@ -149,6 +153,7 @@ cube['int==int'] = datatypeCode['bool']
 cube['int==float'] = datatypeCode['bool']
 cube['float==int'] = datatypeCode['bool']
 cube['float==float'] = datatypeCode['bool']
+cube['string==string'] = datatypeCode['bool']
 cube['dataframe==dataframe'] = datatypeCode['bool']
 
 # Not equal

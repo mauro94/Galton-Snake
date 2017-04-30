@@ -269,10 +269,10 @@ def p_CONDITION_ELIF(p):
                       | lPar SUPER_EXPRESSION rPar SA_COND_1 lBr BLOCK rBr'''
 
 def p_CORR_HEADERS(p):
-    '''CORR_HEADERS : correlateHeaders lPar TABLE_HEADER coma TABLE_HEADER coma cte_float rPar semi_colon '''
+    '''CORR_HEADERS : correlateHeaders lPar SA_DF_CORR_HEADERS_1 TABLE_HEADER coma TABLE_HEADER coma cte_float SA_DF_CORR_HEADERS_2 rPar semi_colon '''
 
 def p_CORR(p):
-    '''CORR : correlate lPar id SA_FIND_DF coma id SA_FIND_DF coma cte_float rPar semi_colon '''
+    '''CORR : correlate lPar id SA_FIND_DF coma id SA_FIND_DF coma cte_float SA_DF_CORR rPar semi_colon '''
 
 def p_CORRELATION(p):
     '''CORRELATION : CORR_HEADERS 
@@ -304,7 +304,7 @@ def p_EXPRESSION_SYM(p):
                       | relop_notequal SA_EXP_ADD_OP'''
 
 def p_FACTOR(p):
-    '''FACTOR : lPar SA_FAKE_BOTTOM EXPRESSION SA_FAKE_BOTTOM_REMOVE rPar 
+    '''FACTOR : lPar SA_FAKE_BOTTOM SUPER_EXPRESSION SA_FAKE_BOTTOM_REMOVE rPar 
               | plus SA_NEW_SIGN VAR_CTE 
               | minus SA_NEW_SIGN VAR_CTE 
               | SA_NEW_SIGN VAR_CTE '''
@@ -379,7 +379,7 @@ def p_SUPER_EXPRESSION(p):
                         | EXPRESSION SA_EXP_6 relop_or SA_EXP_ADD_OP SUPER_EXPRESSION'''
 
 def p_TABLE_HEADER(p):
-    '''TABLE_HEADER : id SA_FIND_DF money_sign id SA_DF_FIND_HEADER_ID'''
+    '''TABLE_HEADER : id SA_FIND_DF money_sign id SA_DF_FIND_HEADER_ID SA_DF_HEADER'''
 
 def p_TERM(p):
     '''TERM : FACTOR SA_EXP_9
@@ -615,13 +615,13 @@ def p_SA_CREATE_VAR(p):
 def p_SA_DF_FIND_HEADER_ID(p):
   '''SA_DF_FIND_HEADER_ID : empty'''
   # dataframe id
-  varID = p[-4]
+  current_df = p[-4]
   # header id
   headerID = p[-1]
-  # search for dataframe id and header id in current varTable and in global varTable
-  if not (functionDirectory[current_scope]['varTable'][varID]['headers'].has_key(headerID) or functionDirectory['global']['varTable'][varID]['headers'].has_key(headerID)):
+  # verify if header already exists
+  if not dataframeTable[current_df]['headers'].has_key(headerID):
     # print error message
-    print("Header does not exist. Header: '%s'" % p[-1])
+    print("Header does not exist. Header: '%s'" % headerID)
     exit(1)
 
 
@@ -1715,7 +1715,7 @@ def p_SA_DF_ACCESS_1(p):
     newQuadruple(quadruples, getOpCode('AccessRow'), constantTable[special_df]['address'], None, exp)
   else:
     # Create quadruple
-    newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], None, exp)
+    newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], 1, exp)
   # update quadruple counter
   cont += 1
 
@@ -1837,6 +1837,102 @@ def p_SA_DF_PRINTTAGS_1(p):
   # update quadruple counter
   cont += 1
   
+
+# Get data using headers declared
+# Create quadruple
+def p_SA_DF_HEADER(p):
+  '''SA_DF_HEADER : empty'''
+  # Globals
+  global cont
+  # get df id
+  current_df = p[-5]
+  # get headerID
+  headerID = p[-2]
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # verify if string is in constants tabl
+  if not constantTable.has_key(str(headerID)): 
+    #create constant
+    constantTable[str(headerID)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': headerID}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], 2, constantTable[headerID]['address'])
+  # update quadruple counter
+  cont += 1
+
+
+# Correlation declared
+# Create quadruple
+def p_SA_DF_CORR(p):
+  '''SA_DF_CORR : empty'''
+  # Globals
+  global cont
+  # get df id
+  current_df1 = p[-7]
+  # get df id
+  current_df2 = p[-4]
+  # get constant value
+  value = p[-1]
+  # new special dataframe
+  special_df1 = '[' + str(current_df1) + ']'
+  # new special dataframe
+  special_df2 = '[' + str(current_df2) + ']'
+  # verify if string is in constants tabl
+  if not constantTable.has_key(str(special_df1)): 
+    #create constant
+    constantTable[str(special_df1)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df1}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+    # verify if string is in constants tabl
+  if not constantTable.has_key(str(special_df2)): 
+    #create constant
+    constantTable[str(special_df2)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df2}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+    # verify if string is in constants tabl
+  if not constantTable.has_key(str(value)): 
+    #create constant
+    constantTable[str(value)] = {'type': getTypeCode('float'), 'address': constVarCount['float'], 'val': value}
+    #increase constant variable counter
+    constVarCount['float'] += 1
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('Corr'), constantTable[str(special_df1)]['address'], constantTable[str(special_df2)]['address'], constantTable[str(value)]['address'] )
+  # update quadruple counter
+  cont += 1
+
+
+# Correlation headers declared
+# Create quadruple
+def p_SA_DF_CORR_HEADERS_1(p):
+  '''SA_DF_CORR_HEADERS_1 : empty'''
+  # Globals
+  global cont
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('CorrHeaders'), None, None, None)
+  # update quadruple counter
+  cont += 1
+
+# Correlation headers declaration finished
+# Create quadruple
+def p_SA_DF_CORR_HEADERS_2(p):
+  '''SA_DF_CORR_HEADERS_2 : empty'''
+  # Globals
+  global cont
+  # get constant value
+  value = p[-1]
+  # verify if value is in constants tabl
+  if not constantTable.has_key(str(value)): 
+    #create constant
+    constantTable[str(value)] = {'type': getTypeCode('float'), 'address': constVarCount['float'], 'val': value}
+    #increase constant variable counter
+    constVarCount['float'] += 1
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('CorrHeadersFactor'), None, None, constantTable[value]['address'])
+  # update quadruple counter
+  cont += 1
+
+
 
 # Build the parser
 yacc.yacc()
