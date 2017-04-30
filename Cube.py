@@ -80,7 +80,7 @@ opCode = {
   # Print cell
   'PrintRow' : 306,
   # Print tags
-  'PrintTags' : 306
+  'PrintTags' : 307
 }
 
 cube = {}

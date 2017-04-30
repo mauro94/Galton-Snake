@@ -134,4 +134,6 @@ def getScope (address):
 def between (value, low, high):
   return (low <= value < high)
 
-
+# -------------------------- DATAFRAME FUNCTIONS ----------------------------
+def column(dataframe, column):
+    return [row[column] for row in dataframe]

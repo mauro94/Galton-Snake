@@ -147,47 +147,80 @@ class Memory:
 # DATAFRAME MEMORY
 # =========================================================
 
+  # =======================================================
+  # CREATION
+  # =======================================================
+
+  def createDataframe(self, dataframe, title):
+    self.global_dataframes[title] = dataframe
+
+  # =======================================================
+  # ACCESS
+  # =======================================================
+
   def accessRow (self, title, row, scope):
     if scope == 1:
       return self.global_dataframes[title]['data'][row]
     else:
+      activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessRow(title, row)
 
   def accessCol (self, title, col, scope):
     if scope == 1:
-      return self.global_dataframes[title]['data'][:,col]
+      return column(self.global_dataframes[title]['data'], col)
     else:
+      activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessCol(title, col)
 
   def accessDf (self, title, scope):
     if scope == 1:
       return self.global_dataframes[title]
     else:
+      activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessDf(title)
 
   def accessTags (self, title, scope):
     if scope == 1:
-      return self.global_dataframes[title]['tags']
+      keyArr = []
+      for key, value in self.global_dataframes[title]['tags'].items():
+        keyArr.append(key[1:-1])
+      return keyArr
     else:
+      activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessTags(title)
 
   def accessCell (self, title, scope, row, col):
     if scope == 1:
       return self.global_dataframes[title]['data'][row][col]
     else:
+      activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessCell(title, row, col)
 
   def accessData (self, title, scope):
     if scope == 1:
       return self.global_dataframes[title]['data']
     else:
+      activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessData(title)
 
-  def accessHeaders (self, title):
+  def accessHeaders (self, title, scope):
     if scope == 1:
       return self.global_dataframes[title]['headers']
     else:
+      activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessHeaders(title)
+
+  # =======================================================
+  # CORRELATIONS
+  # =======================================================
+
+  def correlateTags (self, ):
+
+  def correlateData (self, ):
+
+  # =======================================================
+  # DYNAMIC BIZZ
+  # =======================================================
 
   # Dataframe memory management
   # def generateMemory(self, dataframe, address):

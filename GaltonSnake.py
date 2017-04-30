@@ -1767,13 +1767,13 @@ def p_SA_DF_PRINTCELL_3(p):
     #increase constant variable counter
     constVarCount['string'] += 1
     #create constant
-    constantTable[str(df_print_row)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': df_print_row}
+    constantTable[str(df_print_row)] = {'type': getTypeCode('int'), 'address': constVarCount['int'], 'val': df_print_row}
     #increase constant variable counter
-    constVarCount['string'] += 1
+    constVarCount['int'] += 1
     #create constant
-    constantTable[str(df_print_col)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': df_print_col}
+    constantTable[str(df_print_col)] = {'type': getTypeCode('int'), 'address': constVarCount['int'], 'val': df_print_col}
     #increase constant variable counter
-    constVarCount['string'] += 1
+    constVarCount['int'] += 1
   # Create quadruple
   newQuadruple(quadruples, getOpCode('PrintCell'), constantTable[special_df]['address'], 1, constantTable[special_cell]['address'])
   # update quadruple counter
@@ -1798,8 +1798,18 @@ def p_SA_DF_PRINTHEADERS_1(p):
   '''SA_DF_PRINTHEADERS_1 : empty'''
   # Globals
   global cont
+  # get df id
+  current_df = p[-2]
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # verify if string is in constants table
+  if not constantTable.has_key(str(special_df)):
+    #create constant
+    constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
+    #increase constant variable counter
+    constVarCount['string'] += 1
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('PrintHeaders'), None, None, None)
+  newQuadruple(quadruples, getOpCode('PrintHeaders'), None, None, constantTable[special_df]['address'])
   # update quadruple counter
   cont += 1
 
@@ -1858,7 +1868,7 @@ if __name__ == '__main__':
       # TIME THIS MOTHERFUCKER
       tiempo = time.time()
       # Execute virtual machine
-      execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable)
+      execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable, dataframeTable)
       # PRINT TIME
       print time.time() - tiempo
       exit(1)
