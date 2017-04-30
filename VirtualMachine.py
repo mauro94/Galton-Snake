@@ -4,7 +4,7 @@ from Memory import *
 from Functions import *
 import csv
 
-def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constants):
+def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constants, dataframes):
   # For testing purposes
   print 'Virtual Machine -----------------------------'
 
@@ -39,7 +39,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     resultAddress = q['result']
     operator = getOpString(q['operator'])
 
-    #print (q['operator'], leftOp, rightOp, resultAddress)
+    print (q['operator'], leftOp, rightOp, resultAddress)
 
 # =========================================================
 # Arithmetic
@@ -239,92 +239,84 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
     # Printing dataframes
 
-    elif operator == 'Print_Col':
+    elif operator == 'PrintCol':
       # Go to access row quad
       quad_count = quad_count + 1
       # Get access values
       q = quadruples[quad_count]
       title = memory.getValue(q['operand1'])
-      scope = memory.getValue(q['operand2'])
+      scope = 1
       # TODO: get column num based on headers of this df
       col_num = memory.getValue(q['result'])
       # Access row from memory
-      column = memory.accessRow(title, col_num, scope)
+      column = memory.accessCol(title, col_num, scope)
       # Print
       print column
 
-    elif operator == 'Print_Row':
+    elif operator == 'PrintRow':
       # Go to access row quad
       quad_count = quad_count + 1
       # Get access values
       q = quadruples[quad_count]
       title = memory.getValue(q['operand1'])
-      scope = memory.getValue(q['operand2'])
+      scope = 1
       row_num = memory.getValue(q['result'])
       # Access row from memory
       row = memory.accessRow(title, row_num, scope)
       # Print
       print row
 
-    elif operator == 'Print_DF':
+    elif operator == 'PrintDF':
       # Go to access data frame quad
       quad_count = quad_count + 1
       # Get access values
       q = quadruples[quad_count]
       title = memory.getValue(q['operand1'])
-      scope = memory.getValue(q['operand2'])
+      scope = 1
       # Access whole df
       df = memory.accessDf(title, scope)
       # PRINT
       print df
 
-    elif operator == 'Print_Cell':
+    elif operator == 'PrintCell':
       # Go to access data frame quad
-      quad_count = quad_count + 1
       # Get access values
-      q = quadruples[quad_count]
-      title = memory.getValue(q['operand1'])
-      scope = memory.getValue(q['operand2'])
-      row_col = memory.getValue(q['result'])
+      title = memory.getValue(leftOp)
+      scope = rightOp
+      row_col = memory.getValue(resultAddress)
       # Get real values
-      row = row_col.split(',')[0][1:-1]
+      row = row_col.split(',')[0][1:]
       col = row_col.split(',')[1][0:-1]
+      row = memory.getValue(int(row))
+      col = memory.getValue(int(col))
       # Access whole df
       cell = memory.accessCell(title, scope, row, col)
       # PRINT
       print cell    
 
-    elif operator == 'Print_Data':
+    elif operator == 'PrintData':
       # Go to access data frame quad
-      quad_count = quad_count + 1
       # Get access values
-      q = quadruples[quad_count]
-      title = memory.getValue(q['operand1'])
-      scope = memory.getValue(q['operand2'])
+      title = memory.getValue(leftOp)
+      scope = rightOp
       # Access whole df
       data = memory.accessData(title, scope)
       # PRINT
       print data
 
-    elif operator == 'Print_Headers':
-      # Go to access data frame quad
-      quad_count = quad_count + 1
+    elif operator == 'PrintHeaders':
       # Get access values
-      q = quadruples[quad_count]
-      title = memory.getValue(q['operand1'])
-      scope = memory.getValue(q['operand2'])
+      title = memory.getValue(resultAddress)
+      scope = 1
       # Access whole df
       headers = memory.accessHeaders(title, scope)
       # PRINT
       print headers
 
-    elif operator == 'Print_Tags':
-      # Go to access data frame quad
-      quad_count = quad_count + 1
+    elif operator == 'PrintTags':
       # Get access values
-      q = quadruples[quad_count]
-      title = memory.getValue(q['operand1'])
-      scope = memory.getValue(q['operand2'])
+      title = memory.getValue(resultAddress)
+      scope = 1
       # Access whole df
       tags = memory.accessTags(title, scope)
       # PRINT
@@ -411,13 +403,26 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     elif operator == 'Read':
       # Get filename
       filename = memory.getValue(resultAddress)
+      # title = memory.getValue(leftOp)
+      title = 'var6'
 
       # Read csv file
       with open(filename, 'rb') as csvfile:
-        matrix = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        reader = csv.reader(csvfile)
 
-      print matrix
+        row = reader.next()
+        dataframes[title]['headers'] = row[1:]
 
+        while True:
+          try:
+            row = reader.next()[1:]
+            dataframes[title]['data'].append(row)
+          except csv.Error:
+            print "CSV error: error on creating dataframe"
+          except StopIteration:
+            break
+
+      memory.createDataframe(dataframes[title], title)
       # Add every column to a new matrix element
       # for m in matrix:
 

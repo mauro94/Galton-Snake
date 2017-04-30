@@ -80,11 +80,15 @@ opCode = {
   # Print cell
   'PrintRow' : 306,
   # Print tags
+<<<<<<< HEAD
   'PrintTags' : 306,
   # Print tags
   'Corr' : 308,
   # Print tags
   'CorrHeaders' : 308
+=======
+  'PrintTags' : 307
+>>>>>>> 1db51e37c03a1cf85540cfea6281d1c7338dbdae
 }
 
 cube = {}

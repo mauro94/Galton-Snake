@@ -1,6 +1,5 @@
 main: {
-	dataframe(var5, file.csv);
-	dataframe(var6, ["1","2","3"], file2.csv);
+	dataframe(var6, ["1","2","3"], file.csv);
 
 	printCell var6[2][3];
 	printCol var6.col(2);
@@ -9,5 +8,4 @@ main: {
 	printTags var6;
 
 	correlate(var5, var6, 0.9);
-	correlateHeaders(var5$a, var6$a, 0.9);
 }
