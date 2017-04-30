@@ -39,7 +39,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     resultAddress = q['result']
     operator = getOpString(q['operator'])
 
-    print (q['operator'], leftOp, rightOp, resultAddress)
+    # print (q['operator'], leftOp, rightOp, resultAddress)
 
 # =========================================================
 # Arithmetic
@@ -216,17 +216,53 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 # =========================================================
 
     # Correlations
-    elif operator == 'Correlate':
+    elif operator == 'Corr':
       print 'Correlate'
 
-    elif operator == 'Corr_Headers':
+    elif operator == 'CorrHeaders':
       print 'Correlate headers'
 
-    elif operator == 'Rbind':
-      print 'R BIND MATHAFACKASSSSSSS'
+    elif operator == 'RowBind':
+       # Title of dataframe that gets data
+      taker = memory.getValue(resultAddress)
+      # Go to access col quad
+      quad_count = quad_count + 1
+      # Get access values
+      q = quadruples[quad_count]
+      # Get dataframe giving data
+      giver = memory.getValue(q['operand1'])
+      # Get the row number
+      row_num = memory.getValue(q['result'])
+      # Validate row size to see if it matches
+      sizeOne = memory.getRowSize(taker, 1)
+      row = memory.accessRow(giver, row_num, 1)
+      if sizeOne == len(row):
+        # BIND ROW
+        memory.appendRow(taker, row, 1)
+      else:
+        print 'Row size does not match'
+        exit(1)  
 
-    elif operator == 'Cbind':
-      print 'C BIND MOTHOFUCKERRRRRRS'
+    elif operator == 'ColBind':
+      # Title of dataframe that gets data
+      taker = memory.getValue(resultAddress)
+      # Go to access col quad
+      quad_count = quad_count + 1
+      # Get access values
+      q = quadruples[quad_count]
+      # Get dataframe giving data
+      giver = memory.getValue(q['operand1'])
+      # Get the col number
+      col_num = memory.getValue(q['result'])
+      # Validate column size to see if it matches
+      sizeOne = memory.getColSize(taker, 1)
+      column = memory.accessCol(giver, col_num, 1)
+      if sizeOne == len(column):
+        # BIND COLUMN
+        memory.appendColumn(taker, column, 1)
+      else:
+        print 'Column size does not match'
+        exit(1)        
 
 # =========================================================
 # Printing
@@ -248,6 +284,11 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       scope = 1
       # TODO: get column num based on headers of this df
       col_num = memory.getValue(q['result'])
+      if isinstance(col_num, str):
+        try:
+          col_num = dataframes[title]['headers'].index(col_num)
+        except ValueError:
+          pass
       # Access row from memory
       column = memory.accessCol(title, col_num, scope)
       # Print
@@ -261,6 +302,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       title = memory.getValue(q['operand1'])
       scope = 1
       row_num = memory.getValue(q['result'])
+      print row_num
       # Access row from memory
       row = memory.accessRow(title, row_num, scope)
       # Print
@@ -268,10 +310,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
     elif operator == 'PrintDF':
       # Go to access data frame quad
-      quad_count = quad_count + 1
-      # Get access values
-      q = quadruples[quad_count]
-      title = memory.getValue(q['operand1'])
+      title = memory.getValue(resultAddress)
       scope = 1
       # Access whole df
       df = memory.accessDf(title, scope)
@@ -282,7 +321,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Go to access data frame quad
       # Get access values
       title = memory.getValue(leftOp)
-      scope = rightOp
+      scope = 1
       row_col = memory.getValue(resultAddress)
       # Get real values
       row = row_col.split(',')[0][1:]
@@ -297,8 +336,8 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     elif operator == 'PrintData':
       # Go to access data frame quad
       # Get access values
-      title = memory.getValue(leftOp)
-      scope = rightOp
+      title = memory.getValue(resultAddress)
+      scope = 1
       # Access whole df
       data = memory.accessData(title, scope)
       # PRINT
