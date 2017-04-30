@@ -86,11 +86,9 @@ opCode = {
   # Print tags
   'CorrHeaders' : 309,
   # Print tags
-  'AccessHeader' : 310,
+  'ColBind' : 310,
   # Print tags
-  'ColBind' : 311,
-  # Print tags
-  'RowBind' : 312
+  'RowBind' : 311
 }
 
 cube = {}
@@ -288,10 +286,8 @@ def getOpString (op):
   elif op == 309:
     return 'CorrHeaders' 
   elif op == 310:
-    return 'AccessHeader' 
-  elif op == 311:
     return 'ColBind' 
-  elif op == 312:
+  elif op == 311:
     return 'RowBind' 
 
 def getOpCode (op):
@@ -361,8 +357,6 @@ def getOpCode (op):
     return opCode['Corr']
   elif op == 'CorrHeaders':
     return opCode['CorrHeaders']
-  elif op == 'AccessHeader':
-    return opCode['AccessHeader']
   elif op == 'ColBind':
     return opCode['ColBind']
   elif op == 'RowBind':

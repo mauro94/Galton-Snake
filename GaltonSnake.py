@@ -1723,7 +1723,7 @@ def p_SA_DF_ACCESS_1(p):
   # Get row or col
   access_type = p[-4]
   # new special dataframe
-  special_df = '[' + str(current_df) + ']'
+  special_df = '[' + str(access_df) + ']'
   # check col or row acces
   if access_type == 'row':
     # Create quadruple
@@ -1882,7 +1882,7 @@ def p_SA_DF_HEADER(p):
     #increase constant variable counter
     constVarCount['string'] += 1
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('AccessHeader'), constantTable[special_df]['address'], None, constantTable[headerID]['address'])
+  newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], None, constantTable[headerID]['address'])
   # update quadruple counter
   cont += 1
 
