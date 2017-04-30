@@ -214,10 +214,12 @@ class Memory:
   # CORRELATIONS
   # =======================================================
 
-  def correlateTags (self, ):
+  def correlateTags (self):
+    print 'Correlate Tags'
 
-  def correlateData (self, ):
-
+  def correlateData (self):
+    print 'Correlate Data'
+    
   # =======================================================
   # DYNAMIC BIZZ
   # =======================================================
