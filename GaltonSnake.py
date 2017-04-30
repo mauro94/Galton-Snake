@@ -759,7 +759,7 @@ def p_SA_NEW_DF(p):
     print("Variable already exists. Variable: '%s'" % current_df)
     exit(1)
   # create dataframe
-  dataframeTable[current_df] = {'tags': {}, 'file': None, 'headers': {}, 'data': [[]] }
+  dataframeTable[current_df] = {'tags': {}, 'file': None, 'headers': {}, 'data': [] }
   # new special dataframe
   special_df = '[' + str(current_df) + ']'
   # verify if file string is in constantstable
@@ -1764,6 +1764,14 @@ def p_SA_DF_PRINTCELL_3(p):
   if not constantTable.has_key(str(special_cell)): 
     #create constant
     constantTable[str(special_cell)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_cell}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+    #create constant
+    constantTable[str(df_print_row)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': df_print_row}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+    #create constant
+    constantTable[str(df_print_col)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': df_print_col}
     #increase constant variable counter
     constVarCount['string'] += 1
   # Create quadruple
