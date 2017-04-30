@@ -214,6 +214,36 @@ class Memory:
   # DYNAMIC BIZZ
   # =======================================================
 
+  def getColSize(self, title, scope):
+    if scope == 1:
+      return len(column(self.global_dataframes[title]['data'], 1))
+    else:
+      return activationRecord.getColSize(title)
+
+  def getRowSize(self, title, scope):
+    if scope == 1:
+      return len(self.global_dataframes[title]['data'][0])
+    else:
+      return activationRecord.getRowSize(title)
+
+  def appendColumn(self, title, column, scope):
+    print self.global_dataframes[title]['data']
+    i = 0
+    if scope == 1:
+      for c in self.global_dataframes[title]['data']:
+        c.append(column[i])
+        i += 1
+    else:
+      activationRecord.appendColumn(title, column)
+    print "WITH APPEND"
+    print self.global_dataframes[title]['data']
+
+  def appendRow(self, title, row, scope):
+    if scope == 1:
+      self.global_dataframes[title]['data'].append(row)
+    else:
+      activationRecord.appendRow(title, row)
+
   # Dataframe memory management
   # def generateMemory(self, dataframe, address):
   #   # Calculate offset / size

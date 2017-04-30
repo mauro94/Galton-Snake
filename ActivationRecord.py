@@ -124,8 +124,20 @@ class ActivationRecord:
   # DYNAMIC BIZZ
   # =======================================================
 
-  # def bindRows(self, df1, df2, row1, row2, scope):
+  def getColSize(self, title):
+    return len(column(self.local_dataframes[title]['data'], 1))
 
+  def getRowSize(self, title):
+    return len(self.local_dataframes[title]['data'][0])
+
+  def appendColumn(self, title, column):
+    i = 0
+    for c in self.local_dataframes[title]['data']:
+      c.append(column[i])
+      i += 1
+
+  def appendRow(self, title, row):
+      self.local_dataframes[title]['data'].append(row)
 
   # Dataframe memory management
   # def generateMemory(self, dataframe, address):
