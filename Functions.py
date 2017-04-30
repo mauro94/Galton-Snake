@@ -137,3 +137,12 @@ def between (value, low, high):
 # -------------------------- DATAFRAME FUNCTIONS ----------------------------
 def column(dataframe, column):
     return [row[column] for row in dataframe]
+
+# =======================================================
+# CORRELATIONS
+# =======================================================
+def correlateTags(tagsOne, tagsTwo, threshold):
+  print 'correlate'
+
+def correlateData(dataOne, dataTwo, threshold):
+  print 'correlate data'

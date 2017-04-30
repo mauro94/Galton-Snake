@@ -211,16 +211,6 @@ class Memory:
       return activationRecord.accessHeaders(title)
 
   # =======================================================
-  # CORRELATIONS
-  # =======================================================
-
-  def correlateTags (self):
-    print 'Correlate Tags'
-
-  def correlateData (self):
-    print 'Correlate Data'
-    
-  # =======================================================
   # DYNAMIC BIZZ
   # =======================================================
 
