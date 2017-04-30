@@ -618,11 +618,6 @@ def p_SA_DF_FIND_HEADER_ID(p):
   current_df = p[-4]
   # header id
   headerID = p[-1]
-  # verify if header already exists
-  if not dataframeTable[current_df]['headers'].has_key(headerID):
-    # print error message
-    print("Header does not exist. Header: '%s'" % headerID)
-    exit(1)
 
 
 # Function ended. 
