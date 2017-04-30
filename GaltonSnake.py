@@ -231,7 +231,8 @@ def p_ASSIGNMENT_ARR_EXP(p):
                           | EXP SA_ARR_23'''
 
 def p_BIND_COLS(p):
-    '''BIND_COLS : cbind lPar id SA_FIND_DF SA_DF_BINDINGS_1 coma ACCESS_COL rPar semi_colon '''
+    '''BIND_COLS : cbind lPar id SA_FIND_DF SA_DF_BINDINGS_1 coma ACCESS_COL rPar semi_colon
+                 | cbind lPar id SA_FIND_DF SA_DF_BINDINGS_1 coma TABLE_HEADER rPar semi_colon '''
 
 def p_BIND_ROWS(p):
     '''BIND_ROWS : rbind lPar id SA_FIND_DF SA_DF_BINDINGS_1 coma ACCESS_ROW rPar semi_colon '''
@@ -341,6 +342,12 @@ def p_PRINT_COL(p):
 def p_PRINT_DATA(p):
     '''PRINT_DATA : print SUPER_EXPRESSION SA_PRINT_DATA semi_colon '''
 
+def p_PRINT_DF(p):
+    '''PRINT_DF : printDf id SA_FIND_DF SA_DF_PRINT semi_colon '''
+
+def p_PRINT_DF_DATA(p):
+    '''PRINT_DF_DATA : printData id SA_FIND_DF SA_DF_PRINTTAGS_1 semi_colon '''
+
 def p_PRINT_HEADERS(p):
     '''PRINT_HEADERS : printHeaders id SA_FIND_DF SA_DF_PRINTHEADERS_1 semi_colon '''
 
@@ -356,7 +363,9 @@ def p_PRINT(p):
              | PRINT_DATA
              | PRINT_HEADERS
              | PRINT_CELL
-             | PRINT_ROW'''
+             | PRINT_ROW
+             | PRINT_DF
+             | PRINT_DF_DATA'''
 
 def p_PROGRAM(p):
     '''PROGRAM : SA_PROGRAM_START INSTANTIATE PROGRAM_FUNCTIONS main SA_MAIN_START colon lBr SA_VAR_COUNTERS INSTANTIATE BLOCK rBr SA_END_PROGRAM'''
@@ -1722,7 +1731,7 @@ def p_SA_DF_ACCESS_1(p):
   # Get row or col
   access_type = p[-4]
   # new special dataframe
-  special_df = '[' + str(current_df) + ']'
+  special_df = '[' + str(access_df) + ']'
   # check col or row acces
   if access_type == 'row':
     # Create quadruple
@@ -1860,6 +1869,50 @@ def p_SA_DF_PRINTTAGS_1(p):
   newQuadruple(quadruples, getOpCode('PrintTags'), None, None, constantTable[special_df]['address'])
   # update quadruple counter
   cont += 1
+
+
+# Print df declared
+# Create quadruple
+def p_SA_DF_PRINT(p):
+  '''SA_DF_PRINT : empty'''
+  # Globals
+  global cont
+  # get df id
+  current_df = p[-2]
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # verify if string is in constants table
+  if not constantTable.has_key(str(special_df)): 
+    #create constant
+    constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('PrintDf'), None, None, constantTable[special_df]['address'])
+  # update quadruple counter
+  cont += 1
+
+
+# Print df data declared
+# Create quadruple
+def p_SA_DF_PRINT_DATA(p):
+  '''SA_DF_PRINT_DATA : empty'''
+  # Globals
+  global cont
+  # get df id
+  current_df = p[-2]
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # verify if string is in constants table
+  if not constantTable.has_key(str(special_df)): 
+    #create constant
+    constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('PrintDfData'), None, None, constantTable[special_df]['address'])
+  # update quadruple counter
+  cont += 1
   
 
 # Get data using headers declared
@@ -1881,7 +1934,7 @@ def p_SA_DF_HEADER(p):
     #increase constant variable counter
     constVarCount['string'] += 1
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('AccessHeader'), constantTable[special_df]['address'], None, constantTable[headerID]['address'])
+  newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], None, constantTable[headerID]['address'])
   # update quadruple counter
   cont += 1
 
