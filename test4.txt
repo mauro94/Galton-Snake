@@ -1,11 +1,10 @@
 main: {
-  int B[10];
-  int A[5][4][5];
-  int x;
-  int C;
-  int D;
-  int E;
+	dataframe(var5, file.csv);
+	dataframe(var6, ["1","2","3"], file2.csv);
 
-  B[] = [1,2,3,4,5,6,7,1,3,1];
-
+	printCell var6[2][3];
+	printCol var6.col(2);
+	printRow var6.row(2);
+	printHeaders var6;
+	printTags var6;
 }
