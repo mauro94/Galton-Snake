@@ -86,7 +86,7 @@ opCode = {
   # Print tags
   'CorrHeaders' : 309,
   # Print tags
-  'PrintHeader' : 310,
+  'AccessHeader' : 310,
   # Print tags
   'ColBind' : 311,
   # Print tags
@@ -288,7 +288,7 @@ def getOpString (op):
   elif op == 309:
     return 'CorrHeaders' 
   elif op == 310:
-    return 'PrintHeader' 
+    return 'AccessHeader' 
   elif op == 311:
     return 'ColBind' 
   elif op == 312:
@@ -361,8 +361,8 @@ def getOpCode (op):
     return opCode['Corr']
   elif op == 'CorrHeaders':
     return opCode['CorrHeaders']
-  elif op == 'PrintHeader':
-    return opCode['PrintHeader']
+  elif op == 'AccessHeader':
+    return opCode['AccessHeader']
   elif op == 'ColBind':
     return opCode['ColBind']
   elif op == 'RowBind':

@@ -242,7 +242,7 @@ def p_BINDINGS(p):
 
 def p_BLOCK(p):
     '''BLOCK : SA_FINAL_FUNC_VALUES BLOCK_STM 
-             | SA_FINAL_FUNC_VALUES BLOCK_STM return EXP SA_RET semi_colon '''
+             | SA_FINAL_FUNC_VALUES BLOCK_STM return SUPER_EXPRESSION SA_RET semi_colon '''
 
 def p_BLOCK_STM(p):
     '''BLOCK_STM : STATEMENT BLOCK_STM 
@@ -339,7 +339,7 @@ def p_PRINT_COL(p):
                  | printCol SA_DF_PRINTCOL_1 ACCESS_COL semi_colon '''
 
 def p_PRINT_DATA(p):
-    '''PRINT_DATA : print VAR_CTE SA_PRINT_DATA semi_colon '''
+    '''PRINT_DATA : print SUPER_EXPRESSION SA_PRINT_DATA semi_colon '''
 
 def p_PRINT_HEADERS(p):
     '''PRINT_HEADERS : printHeaders id SA_FIND_DF SA_DF_PRINTHEADERS_1 semi_colon '''
@@ -1734,7 +1734,7 @@ def p_SA_DF_ACCESS_1(p):
     newQuadruple(quadruples, getOpCode('AccessRow'), constantTable[special_df]['address'], None, exp)
   else:
     # Create quadruple
-    newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], 1, exp)
+    newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], None, exp)
   # update quadruple counter
   cont += 1
 
@@ -1980,7 +1980,7 @@ if __name__ == '__main__':
       # Parse the data
       if (yacc.parse(data, tracking = True) == 'OK'):
         print(dirProc)
-      # TIME THIS MOTHERFUCKER
+      # TIME
       tiempo = time.time()
       # Execute virtual machine
       execute(quadruples, globalVarCount, localVarCount, tempVarCount, constVarCount, constantTable, dataframeTable)
