@@ -41,6 +41,8 @@ reserved = {
    'printHeaders' : 'printHeaders',
    'printRow' : 'printRow',
    'printTags' : 'printTags',
+   'printDf' : 'printDf',
+   'printData' : 'printData',
    'main' : 'main',
    'int' : 'int',
    'float' : 'float',
