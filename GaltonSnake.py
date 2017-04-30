@@ -452,8 +452,10 @@ def p_SA_DF_ADD_FILE(p):
     constantTable[str(file)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': file}
     #increase constant variable counter
     constVarCount['string'] += 1
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
   # create quadruple
-  newQuadruple(quadruples, getOpCode('Read'), None, None, constantTable[str(file)]['address'])
+  newQuadruple(quadruples, getOpCode('Read'), constantTable[str(special_df)]['address'], None, constantTable[str(file)]['address'])
   # update quadruple counter
   cont += 1
   # add file name
