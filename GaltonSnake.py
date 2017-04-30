@@ -1689,7 +1689,7 @@ def p_SA_PRINT_DATA(p):
 def p_SA_DF_BINDINGS_1(p):
   '''SA_DF_BINDINGS_1 : empty'''
   # Globals
-  global current_df
+  global current_df, cont
   # Get df id
   current_df = p[-2]
   # get type of bind
