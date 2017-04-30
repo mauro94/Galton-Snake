@@ -231,7 +231,8 @@ def p_ASSIGNMENT_ARR_EXP(p):
                           | EXP SA_ARR_23'''
 
 def p_BIND_COLS(p):
-    '''BIND_COLS : cbind lPar id SA_FIND_DF SA_DF_BINDINGS_1 coma ACCESS_COL rPar semi_colon '''
+    '''BIND_COLS : cbind lPar id SA_FIND_DF SA_DF_BINDINGS_1 coma ACCESS_COL rPar semi_colon
+                 | cbind lPar id SA_FIND_DF SA_DF_BINDINGS_1 coma TABLE_HEADER rPar semi_colon '''
 
 def p_BIND_ROWS(p):
     '''BIND_ROWS : rbind lPar id SA_FIND_DF SA_DF_BINDINGS_1 coma ACCESS_ROW rPar semi_colon '''
