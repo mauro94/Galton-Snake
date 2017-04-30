@@ -80,15 +80,11 @@ opCode = {
   # Print cell
   'PrintRow' : 306,
   # Print tags
-<<<<<<< HEAD
-  'PrintTags' : 306,
+  'PrintTags' : 307,
   # Print tags
   'Corr' : 308,
   # Print tags
-  'CorrHeaders' : 308
-=======
-  'PrintTags' : 307
->>>>>>> 1db51e37c03a1cf85540cfea6281d1c7338dbdae
+  'CorrHeaders' : 309
 }
 
 cube = {}
@@ -281,6 +277,10 @@ def getOpString (op):
     return 'PrintRow'
   elif op == 307:
     return 'PrintTags' 
+  elif op == 308:
+    return 'Corr' 
+  elif op == 309:
+    return 'CorrHeaders' 
 
 def getOpCode (op):
   if op == '>':
@@ -345,6 +345,10 @@ def getOpCode (op):
     return opCode['PrintRow']
   elif op == 'PrintTags':
     return opCode['PrintTags']
+  elif op == 'Corr':
+    return opCode['Corr']
+  elif op == 'CorrHeaders':
+    return opCode['CorrHeaders']
 
 def getResultType(operand1, operand2, operator):
   one = getTypeString(operand1)
