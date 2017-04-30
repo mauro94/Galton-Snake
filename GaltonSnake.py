@@ -463,10 +463,16 @@ def p_SA_DF_ADD_FILE(p):
     constantTable[str(file)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': file}
     #increase constant variable counter
     constVarCount['string'] += 1
+  # verify if file string is in constants table
+  if not constantTable.has_key(str(current_scope)): 
+    #create constant
+    constantTable[str(current_scope)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': current_scope}
+    #increase constant variable counter
+    constVarCount['string'] += 1
   # new special dataframe
   special_df = '[' + str(current_df) + ']'
   # create quadruple
-  newQuadruple(quadruples, getOpCode('Read'), constantTable[str(special_df)]['address'], None, constantTable[str(file)]['address'])
+  newQuadruple(quadruples, getOpCode('Read'), constantTable[str(special_df)]['address'], constantTable[str(current_scope)]['address'], constantTable[str(file)]['address'])
   # update quadruple counter
   cont += 1
   # add file name
@@ -710,7 +716,7 @@ def p_SA_FIND_DF(p):
   # get id
   dfID = p[-1]
   # search for id
-  if not (dataframeTable[current_scope].has_key(dfID)):
+  if not (dataframeTable[current_scope].has_key(dfID) or dataframeTable['global'].has_key(dfID)):
     # print error message
     print("Dataframe does not exist. Dataframe: '%s'" % dfID)
     exit(1)
@@ -1713,12 +1719,17 @@ def p_SA_DF_BINDINGS_1(p):
     constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
     #increase constant variable counter
     constVarCount['string'] += 1
+    # verify scope
+  if dataframeTable['global'].has_key(current_df):
+    scope = 1
+  else:
+    scope = 2
   if t_bind == 'cbind':
     # Create quadruple
-    newQuadruple(quadruples, getOpCode('ColBind'), None, None, constantTable[special_df]['address'])
+    newQuadruple(quadruples, getOpCode('ColBind'), None, scope, constantTable[special_df]['address'])
   else:
     # Create quadruple
-    newQuadruple(quadruples, getOpCode('RowBind'), None, None, constantTable[special_df]['address'])
+    newQuadruple(quadruples, getOpCode('RowBind'), None, scope, constantTable[special_df]['address'])
   # update quadruple counter
   cont += 1
 
@@ -1739,13 +1750,18 @@ def p_SA_DF_ACCESS_1(p):
   access_type = p[-4]
   # new special dataframe
   special_df = '[' + str(access_df) + ']'
+  # verify scope
+  if dataframeTable['global'].has_key(access_df):
+    scope = 1
+  else:
+    scope = 2
   # check col or row acces
   if access_type == 'row':
     # Create quadruple
-    newQuadruple(quadruples, getOpCode('AccessRow'), constantTable[special_df]['address'], None, exp)
+    newQuadruple(quadruples, getOpCode('AccessRow'), constantTable[special_df]['address'], scope, exp)
   else:
     # Create quadruple
-    newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], None, exp)
+    newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], scope, exp)
   # update quadruple counter
   cont += 1
 
@@ -1804,8 +1820,13 @@ def p_SA_DF_PRINTCELL_3(p):
     constantTable[str(df_print_col)] = {'type': getTypeCode('int'), 'address': constVarCount['int'], 'val': df_print_col}
     #increase constant variable counter
     constVarCount['int'] += 1
+  # verify scope
+  if dataframeTable['global'].has_key(current_df):
+    scope = 1
+  else:
+    scope = 2
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('PrintCell'), constantTable[special_df]['address'], None, constantTable[special_cell]['address'])
+  newQuadruple(quadruples, getOpCode('PrintCell'), constantTable[special_df]['address'], scope, constantTable[special_cell]['address'])
   # update quadruple counter
   cont += 1
 
@@ -1838,8 +1859,13 @@ def p_SA_DF_PRINTHEADERS_1(p):
     constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
     #increase constant variable counter
     constVarCount['string'] += 1
+  # verify scope
+  if dataframeTable['global'].has_key(current_df):
+    scope = 1
+  else:
+    scope = 2
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('PrintHeaders'), None, None, constantTable[special_df]['address'])
+  newQuadruple(quadruples, getOpCode('PrintHeaders'), None, scope, constantTable[special_df]['address'])
   # update quadruple counter
   cont += 1
 
@@ -1872,8 +1898,13 @@ def p_SA_DF_PRINTTAGS_1(p):
     constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
     #increase constant variable counter
     constVarCount['string'] += 1
+  # verify scope
+  if dataframeTable['global'].has_key(current_df):
+    scope = 1
+  else:
+    scope = 2
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('PrintTags'), None, None, constantTable[special_df]['address'])
+  newQuadruple(quadruples, getOpCode('PrintTags'), None, scope, constantTable[special_df]['address'])
   # update quadruple counter
   cont += 1
 
@@ -1894,8 +1925,13 @@ def p_SA_DF_PRINT(p):
     constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
     #increase constant variable counter
     constVarCount['string'] += 1
+  # verify scope
+  if dataframeTable['global'].has_key(current_df):
+    scope = 1
+  else:
+    scope = 2
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('PrintDf'), None, None, constantTable[special_df]['address'])
+  newQuadruple(quadruples, getOpCode('PrintDf'), None, scope, constantTable[special_df]['address'])
   # update quadruple counter
   cont += 1
 
@@ -1916,8 +1952,13 @@ def p_SA_DF_PRINT_DATA(p):
     constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
     #increase constant variable counter
     constVarCount['string'] += 1
+  # verify scope
+  if dataframeTable['global'].has_key(current_df):
+    scope = 1
+  else:
+    scope = 2
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('PrintDfData'), None, None, constantTable[special_df]['address'])
+  newQuadruple(quadruples, getOpCode('PrintDfData'), None, scope, constantTable[special_df]['address'])
   # update quadruple counter
   cont += 1
   
@@ -1992,8 +2033,13 @@ def p_SA_DF_CORR_HEADERS_1(p):
   '''SA_DF_CORR_HEADERS_1 : empty'''
   # Globals
   global cont
+  # verify scope
+  if dataframeTable['global'].has_key(current_df):
+    scope = 1
+  else:
+    scope = 2
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('CorrHeaders'), None, None, None)
+  newQuadruple(quadruples, getOpCode('CorrHeaders'), None, scope, None)
   # update quadruple counter
   cont += 1
 
