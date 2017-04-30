@@ -156,6 +156,7 @@ import ply.yacc as yacc
 functionDirectory = {}  # {functionName : {functionType, [paramTypeList], #parameters, #localvariables, #quadruplecounter, {varTable}} }
                         # varTable -> {varID : {type, address, dimension}}
 constantTable = {}      # {constant : {type, address, value} }
+dataframeTable = {}     # {dataframeName : 'address': 0, 'tags': {}, 'file': None, 'headers': {}, 'data': [[]]
 current_scope = ''      # current scope in the program
 current_type = ''       # current type being used
 current_sign = ''       # current sign being used
@@ -177,8 +178,10 @@ array_size = 0          # array size
 array_id = ''           # current array id
 dimension_data = None   # current dimension data for array access
 array_access_R = 0      # R used for calculations in array access
-current_dfID = ''       # current dataframe id
+current_df = ''         # current dataframe id
 funcWithReturn = False  # defines if current function has a return op
+df_print_row = 0        # define row to print
+df_print_col = 0        # define col to print
 
 # Memory counters
 # 2,000 slots per block, dataframes 10,000 
@@ -204,10 +207,10 @@ start = 'PROGRAM'
 
 # --------- GRAMMARS ---------
 def p_ACCESS_COL(p):
-    '''ACCESS_COL : id SA_FIND_ID period row lPar EXP  rPar '''
+    '''ACCESS_COL : id SA_FIND_DF period col lPar EXP rPar SA_DF_ACCESS_1'''
 
 def p_ACCESS_ROW(p):
-    '''ACCESS_ROW : id SA_FIND_ID period col lPar EXP  rPar '''
+    '''ACCESS_ROW : id SA_FIND_DF period row lPar EXP rPar SA_DF_ACCESS_1'''
 
 def p_ASSIGNMENT(p):
     '''ASSIGNMENT : id SA_FIND_ID SA_EXP_1_ID equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
@@ -228,10 +231,10 @@ def p_ASSIGNMENT_ARR_EXP(p):
                           | EXP SA_ARR_23'''
 
 def p_BIND_COLS(p):
-    '''BIND_COLS : cbind lPar id SA_FIND_ID coma ACCESS_COL rPar semi_colon '''
+    '''BIND_COLS : cbind lPar id SA_FIND_DF SA_DF_BINDINGS_1 coma ACCESS_COL rPar semi_colon '''
 
 def p_BIND_ROWS(p):
-    '''BIND_ROWS : rbind lPar id SA_FIND_ID coma ACCESS_ROW rPar semi_colon '''
+    '''BIND_ROWS : rbind lPar id SA_FIND_DF SA_DF_BINDINGS_1 coma ACCESS_ROW rPar semi_colon '''
 
 def p_BINDINGS(p):
     '''BINDINGS : BIND_ROWS 
@@ -269,15 +272,15 @@ def p_CORR_HEADERS(p):
     '''CORR_HEADERS : correlateHeaders lPar TABLE_HEADER coma TABLE_HEADER coma cte_float rPar semi_colon '''
 
 def p_CORR(p):
-    '''CORR : correlate lPar id SA_FIND_ID coma id SA_FIND_ID coma cte_float rPar semi_colon '''
+    '''CORR : correlate lPar id SA_FIND_DF coma id SA_FIND_DF coma cte_float rPar semi_colon '''
 
 def p_CORRELATION(p):
     '''CORRELATION : CORR_HEADERS 
                    | CORR'''
 
 def p_CREATE_DF(p):
-    '''CREATE_DF : dataframe SA_NEW_DF lPar id SA_CREATE_VAR coma lSqBr CREATE_DF_TAGS rSqBr coma file SA_DF_ADD_FILE rPar semi_colon 
-                 | dataframe SA_NEW_DF lPar id SA_CREATE_VAR coma file SA_DF_ADD_FILE rPar semi_colon '''
+    '''CREATE_DF : dataframe lPar id SA_NEW_DF coma lSqBr CREATE_DF_TAGS rSqBr coma file SA_DF_ADD_FILE rPar semi_colon 
+                 | dataframe lPar id SA_NEW_DF coma file SA_DF_ADD_FILE rPar semi_colon '''
 
 def p_CREATE_DF_TAGS(p):
     '''CREATE_DF_TAGS : cte_string SA_ADD_DF_TAG coma CREATE_DF_TAGS
@@ -329,23 +332,23 @@ def p_PARAMETERS(p):
     
 
 def p_PRINT_CELL(p):
-    '''PRINT_CELL : printCell id SA_FIND_ID lSqBr EXP coma EXP rSqBr semi_colon '''
+    '''PRINT_CELL : printCell id SA_FIND_DF lSqBr EXP SA_DF_PRINTCELL_1 rSqBr lSqBr EXP SA_DF_PRINTCELL_2 rSqBr SA_DF_PRINTCELL_3 semi_colon '''
 
 def p_PRINT_COL(p):
-    '''PRINT_COL : printCol TABLE_HEADER semi_colon
-                 | printCol ACCESS_COL semi_colon '''
+    '''PRINT_COL : printCol SA_DF_PRINTCOL_1 TABLE_HEADER semi_colon
+                 | printCol SA_DF_PRINTCOL_1 ACCESS_COL semi_colon '''
 
 def p_PRINT_DATA(p):
     '''PRINT_DATA : print VAR_CTE SA_PRINT_DATA semi_colon '''
 
 def p_PRINT_HEADERS(p):
-    '''PRINT_HEADERS : printHeaders id SA_FIND_ID semi_colon '''
+    '''PRINT_HEADERS : printHeaders id SA_FIND_DF SA_DF_PRINTHEADERS_1 semi_colon '''
 
 def p_PRINT_ROW(p):
-    '''PRINT_ROW : printRow id ACCESS_ROW semi_colon '''
+    '''PRINT_ROW : printRow SA_DF_PRINTROW_1 ACCESS_ROW semi_colon '''
 
 def p_PRINT_TAGS(p):
-    '''PRINT_TAGS : printTags id SA_FIND_ID semi_colon '''
+    '''PRINT_TAGS : printTags id SA_FIND_DF SA_DF_PRINTTAGS_1 semi_colon '''
 
 def p_PRINT(p):
     '''PRINT : PRINT_COL
@@ -376,7 +379,7 @@ def p_SUPER_EXPRESSION(p):
                         | EXPRESSION SA_EXP_6 relop_or SA_EXP_ADD_OP SUPER_EXPRESSION'''
 
 def p_TABLE_HEADER(p):
-    '''TABLE_HEADER : id SA_FIND_ID money_sign id SA_DF_FIND_HEADER_ID'''
+    '''TABLE_HEADER : id SA_FIND_DF money_sign id SA_DF_FIND_HEADER_ID'''
 
 def p_TERM(p):
     '''TERM : FACTOR SA_EXP_9
@@ -441,16 +444,8 @@ def p_SA_DF_ADD_FILE(p):
   '''SA_DF_ADD_FILE : empty'''
   # global variables
   global functionDirectory, cont
-  # get dataframe id
-  varID = p[-8]
   # get file name
   file = p[-1]
-  # define which grammar is active
-  if (varID == None):
-    # get dataframe id
-    varID = p[-4]
-  # add file name
-  functionDirectory[current_scope]['varTable'][varID]['file'] = file
   # verify if file string is in constants table
   if not constantTable.has_key(str(file)): 
     #create constant
@@ -458,9 +453,11 @@ def p_SA_DF_ADD_FILE(p):
     #increase constant variable counter
     constVarCount['string'] += 1
   # create quadruple
-  newQuadruple(quadruples, getOpCode('ReadFile'), None, None, constantTable[str(file)]['address'])
+  newQuadruple(quadruples, getOpCode('Read'), None, None, constantTable[str(file)]['address'])
   # update quadruple counter
   cont += 1
+  # add file name
+  dataframeTable[current_df]['file'] = constantTable[str(file)]['address']
 
 
 
@@ -469,20 +466,22 @@ def p_SA_DF_ADD_FILE(p):
 # Add tag to current dataframe
 def p_SA_ADD_DF_TAG(p):
   '''SA_ADD_DF_TAG : empty'''
-  # global variables
-  global functionDirectory
-  # get dataframe id
-  varID = current_dfID
   # get tag
   tag = p[-1]
   # verify if new tag already exists
-  if functionDirectory[current_scope]['varTable'][varID]['tags'].has_key(tag):
+  if dataframeTable[current_df]['tags'].has_key(tag):
     # print error message
     print("Tag already exists. Tag: '%s'" % tag)
     exit(1)
   else:
+    # verify if file string is in constants table
+    if not constantTable.has_key(str(tag)): 
+      #create constant
+      constantTable[str(tag)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': tag}
+      #increase constant variable counter
+      constVarCount['string'] += 1
     # add new tag
-    functionDirectory[current_scope]['varTable'][varID]['tags'][tag] = tag
+    dataframeTable[current_df]['tags'][tag] = constantTable[str(tag)]['address']
 
 
 
@@ -573,7 +572,7 @@ def p_SA_CREATE_PARAMS(p):
 def p_SA_CREATE_VAR(p):
   '''SA_CREATE_VAR : empty'''
   # global variables
-  global varCounter, localVarCount, globalVarCount, current_dfID
+  global varCounter, localVarCount, globalVarCount, current_df
   # var id
   varID = p[-1]
   # validate if current variable does already exists in current varTable and global varTable
@@ -587,7 +586,7 @@ def p_SA_CREATE_VAR(p):
       # create variable PENDING
       functionDirectory[current_scope]['varTable'][varID] = {'type': getTypeCode(current_type), 'address': 0, 'tags': {}, 'file': None, 'headers': {}, 'data': [[]]}
       # get df id
-      current_dfID = varID
+      current_df = varID
     # other variable type
     else:
       # create variable
@@ -662,7 +661,7 @@ def p_SA_END_PROGRAM(p):
   print ''
   print constantTable
   print ''
-  print tempVarCount
+  print dataframeTable
 
   # clear function dictionary
   functionDirectory.clear() 
@@ -695,6 +694,18 @@ def p_SA_FIND_ID(p):
     print("ID does not exist. ID: '%s'" % varID)
     exit(1)
 
+
+# dataframe is declared.
+# Verify dfs is in df table. If not found declare error.
+def p_SA_FIND_DF(p):
+  '''SA_FIND_DF : empty'''
+  # get id
+  dfID = p[-1]
+  # search for id
+  if not (dataframeTable.has_key(dfID)):
+    # print error message
+    print("Dataframe does not exist. Dataframe: '%s'" % dfID)
+    exit(1)
 
 
 # A function is being called.
@@ -735,13 +746,29 @@ def p_SA_MAIN_START(p):
 def p_SA_NEW_DF(p):
   '''SA_NEW_DF : empty'''
   # global variables
-  global current_type, cont
+  global current_type, current_df
   # define current_type
   current_type = 'dataframe'
-  # create endproc quadruple
-  newQuadruple(quadruples, getOpCode('PrepDataframe'), None, None, None)
+  # get id
+  current_df = p[-1]
+  # validate if current variable does already exists in current varTable and global varTable
+  if functionDirectory[current_scope]['varTable'].has_key(current_df) or functionDirectory['global']['varTable'].has_key(current_df) or dataframeTable.has_key(current_df):
+    # print error message
+    print("Variable already exists. Variable: '%s'" % current_df)
+    exit(1)
+  # create dataframe
+  dataframeTable[current_df] = {'tags': {}, 'file': None, 'headers': {}, 'data': [[]] }
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # verify if file string is in constantstable
+  if not constantTable.has_key(str(special_df)): 
+    #create constant
+    constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': current_df}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+  #newQuadruple(quadruples, getOpCode('PrepDataframe'), None, None, None)
   # update quadruple counter
-  cont += 1
+  #cont += 1
 
 
 
@@ -1482,6 +1509,7 @@ def p_SA_ARR_16(p):
   # update quadruple counter
   cont += 1
   # check next dim not null
+  print len(functionDirectory[current_scope]['varTable'][array_id]['dimension'])-1
   if current_dim < len(functionDirectory[current_scope]['varTable'][array_id]['dimension'])-1:
     # get operand
     aux = stackPop(operands)
@@ -1654,20 +1682,151 @@ def p_SA_PRINT_DATA(p):
 
 
 # --------- EXTRA GRAMMARS / DATAFRAMES QUADRUPPLES ---------
+# Binding operation declared
+# Get df id
+def p_SA_DF_BINDINGS_1(p):
+  '''SA_DF_BINDINGS_1 : empty'''
+  # Globals
+  global current_df
+  # Get df id
+  current_df = p[-2]
+
 # Access to row or column declared
 # Create access quadruple
-#def p_SA_PRINT_DATA(p):
-#  '''SA_PRINT_DATA : empty'''
-#  # Globals
-#  global cont
-#  # get id
-#  varID = stackPop(operands)
-#  # pop type
-#  stackPop(types)
-#  # Create quadruple
-#  newQuadruple(quadruples, getOpCode('Print'), None, None, varID)
-#  # update quadruple counter
-#  cont += 1
+def p_SA_DF_ACCESS_1(p):
+  '''SA_DF_ACCESS_1 : empty'''
+  # Globals
+  global cont
+  # Get df id for access
+  access_df = p[-7]
+  # Get expression result
+  exp = stackPop(operands)
+  # Get type
+  t_exp = stackPop(types)
+  # Get row or col
+  access_type = p[-4]
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # check col or row acces
+  if access_type == 'row':
+    # Create quadruple
+    newQuadruple(quadruples, getOpCode('AccessRow'), constantTable[special_df]['address'], None, exp)
+  else:
+    # Create quadruple
+    newQuadruple(quadruples, getOpCode('AccessCol'), constantTable[special_df]['address'], None, exp)
+  # update quadruple counter
+  cont += 1
+
+
+# 1 Exp in print cell declared
+# Define row
+def p_SA_DF_PRINTCELL_1(p):
+  '''SA_DF_PRINTCELL_1 : empty'''
+  # Globals
+  global df_print_row
+  # pop operands
+  row = stackPop(operands)
+  # pop types
+  stackPop(types)
+  # define row to print
+  df_print_row = row
+
+
+# 2 Exp in print cell declared
+# Define col
+def p_SA_DF_PRINTCELL_2(p):
+  '''SA_DF_PRINTCELL_2 : empty'''
+  # Globals
+  global df_print_col
+  # pop operands
+  col = stackPop(operands)
+  # pop types
+  stackPop(types)
+  # define row to print
+  df_print_col = col
+  
+
+# Print cell finished declaring
+# Create quadruple
+def p_SA_DF_PRINTCELL_3(p):
+  '''SA_DF_PRINTCELL_3 : empty'''
+  # Globals
+  global cont
+  # get df id
+  current_df = p[-10]
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # special cel
+  special_cell = '[' + str(df_print_row) + ',' + str(df_print_col)+ ']'
+  # verify if string is in constants tabl
+  if not constantTable.has_key(str(special_cell)): 
+    #create constant
+    constantTable[str(special_cell)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_cell}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('PrintCell'), constantTable[special_df]['address'], 1, constantTable[special_cell]['address'])
+  # update quadruple counter
+  cont += 1
+
+
+# Print col declared
+# Create quadruple
+def p_SA_DF_PRINTCOL_1(p):
+  '''SA_DF_PRINTCOL_1 : empty'''
+  # Globals
+  global cont
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('PrintCol'), None, None, None)
+  # update quadruple counter
+  cont += 1
+
+
+# Print headers declared
+# Create quadruple
+def p_SA_DF_PRINTHEADERS_1(p):
+  '''SA_DF_PRINTHEADERS_1 : empty'''
+  # Globals
+  global cont
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('PrintHeaders'), None, None, None)
+  # update quadruple counter
+  cont += 1
+
+
+# Print row declared
+# Create quadruple
+def p_SA_DF_PRINTROW_1(p):
+  '''SA_DF_PRINTROW_1 : empty'''
+  # Globals
+  global cont
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('PrintRow'), None, None, None)
+  # update quadruple counter
+  cont += 1
+
+
+# Print tags declared
+# Create quadruple
+def p_SA_DF_PRINTTAGS_1(p):
+  '''SA_DF_PRINTTAGS_1 : empty'''
+  # Globals
+  global cont
+  # get df id
+  current_df = p[-2]
+  # new special dataframe
+  special_df = '[' + str(current_df) + ']'
+  # verify if string is in constants table
+  if not constantTable.has_key(str(special_df)): 
+    #create constant
+    constantTable[str(special_df)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df}
+    #increase constant variable counter
+    constVarCount['string'] += 1
+  # Create quadruple
+  newQuadruple(quadruples, getOpCode('PrintTags'), None, None, constantTable[special_df]['address'])
+  # update quadruple counter
+  cont += 1
+  
 
 # Build the parser
 yacc.yacc()

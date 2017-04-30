@@ -66,9 +66,21 @@ opCode = {
   # Print
   'Print' : 209,
   # Read File
-  'ReadFile' : 300, #leer un file
-  # Prep Dataframe
-  'PrepDataframe' : 301# perparar memporia para leer un dataframe
+  'Read' : 300,
+  # Access column
+  'AccessCol' : 301,
+  # Access row
+  'AccessRow' : 302,
+  # Print cell
+  'PrintCell' : 303,
+  # Print cell
+  'PrintCol' : 304,
+  # Print cell
+  'PrintHeaders' : 305,
+  # Print cell
+  'PrintRow' : 306,
+  # Print tags
+  'PrintTags' : 306
 }
 
 cube = {}
@@ -244,6 +256,22 @@ def getOpString (op):
     return 'Ver'
   elif op == 209: 
     return 'Print'
+  elif op == 300:
+    return 'Read'
+  elif op == 301:
+    return 'AccessCol'
+  elif op == 302:
+    return 'AccessRow'
+  elif op == 303:
+    return 'PrintCell'
+  elif op == 304:
+    return 'PrintCol'
+  elif op == 305:
+    return 'PrintHeaders'
+  elif op == 306:
+    return 'PrintRow'
+  elif op == 307:
+    return 'PrintTags' 
 
 def getOpCode (op):
   if op == '>':
@@ -292,6 +320,22 @@ def getOpCode (op):
     return opCode['Ver']
   elif op == 'Print': 
     return opCode['Print']
+  elif op == 'Read':
+    return opCode['Read']
+  elif op == 'AccessCol': 
+    return opCode['AccessCol']
+  elif op == 'AccessRow':
+    return opCode['AccessRow']
+  elif op == 'PrintCell':
+    return opCode['PrintCell']
+  elif op == 'PrintCol':
+    return opCode['PrintCol']
+  elif op == 'PrintHeaders':
+    return opCode['PrintHeaders']
+  elif op == 'PrintRow':
+    return opCode['PrintRow']
+  elif op == 'PrintTags':
+    return opCode['PrintTags']
 
 def getResultType(operand1, operand2, operator):
   one = getTypeString(operand1)
