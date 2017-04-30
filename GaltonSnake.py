@@ -470,7 +470,7 @@ def p_SA_DF_ADD_FILE(p):
   # update quadruple counter
   cont += 1
   # add file name
-  dataframeTable[current_df]['file'] = constantTable[str(file)]['address']
+  dataframeTable[current_scope][current_df]['file'] = constantTable[str(file)]['address']
 
 
 
@@ -482,7 +482,7 @@ def p_SA_ADD_DF_TAG(p):
   # get tag
   tag = p[-1]
   # verify if new tag already exists
-  if dataframeTable[current_df]['tags'].has_key(tag):
+  if dataframeTable[current_scope][current_df]['tags'].has_key(tag):
     # print error message
     print("Tag already exists. Tag: '%s'" % tag)
     exit(1)
@@ -494,7 +494,7 @@ def p_SA_ADD_DF_TAG(p):
       #increase constant variable counter
       constVarCount['string'] += 1
     # add new tag
-    dataframeTable[current_df]['tags'][tag] = constantTable[str(tag)]['address']
+    dataframeTable[current_scope][current_df]['tags'][tag] = constantTable[str(tag)]['address']
 
 
 
@@ -596,7 +596,7 @@ def p_SA_CREATE_VAR(p):
   else:
     # dataframe
     if current_type == 'dataframe':
-      # create variable PENDING
+      # create variable 
       functionDirectory[current_scope]['varTable'][varID] = {'type': getTypeCode(current_type), 'address': 0, 'tags': {}, 'file': None, 'headers': {}, 'data': [[]]}
       # get df id
       current_df = varID
@@ -710,7 +710,7 @@ def p_SA_FIND_DF(p):
   # get id
   dfID = p[-1]
   # search for id
-  if not (dataframeTable.has_key(dfID)):
+  if not (dataframeTable[current_scope].has_key(dfID)):
     # print error message
     print("Dataframe does not exist. Dataframe: '%s'" % dfID)
     exit(1)
@@ -760,12 +760,12 @@ def p_SA_NEW_DF(p):
   # get id
   current_df = p[-1]
   # validate if current variable does already exists in current varTable and global varTable
-  if functionDirectory[current_scope]['varTable'].has_key(current_df) or functionDirectory['global']['varTable'].has_key(current_df) or dataframeTable.has_key(current_df):
+  if functionDirectory[current_scope]['varTable'].has_key(current_df) or functionDirectory['global']['varTable'].has_key(current_df) or dataframeTable[current_scope].has_key(current_df):
     # print error message
     print("Variable already exists. Variable: '%s'" % current_df)
     exit(1)
   # create dataframe
-  dataframeTable[current_df] = {'tags': {}, 'file': None, 'headers': {}, 'data': [] }
+  dataframeTable[current_scope][current_df] = {'tags': {}, 'file': None, 'headers': {}, 'data': [] }
   # new special dataframe
   special_df = '[' + str(current_df) + ']'
   # verify if file string is in constantstable
@@ -833,6 +833,8 @@ def p_SA_PROGRAM_START(p):
   cont += 1
   # push cont to jumps
   stackPush(jumps, cont-1)
+  #prep dataframes
+  dataframeTable['global'] =  {}
 
 
 
@@ -868,6 +870,9 @@ def p_SA_VAR_COUNTERS(p):
   tempVarCount[funcID]['float'] = getInitDir('temp', 'float')
   tempVarCount[funcID]['string'] = getInitDir('temp', 'string')
   tempVarCount[funcID]['dataframe'] = getInitDir('temp', 'dataframe')
+  # dataframe new function
+  dataframeTable[funcID] =  {}
+
 
 
 # Void function found. 
