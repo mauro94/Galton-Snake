@@ -7,14 +7,15 @@ class ActivationRecord:
     self.local_ints       = [None] * (local_variables['int'] - getInitDir('local','int'))
     self.local_floats     = [None] * (local_variables['float'] - getInitDir('local','float'))
     self.local_strings    = [None] * (local_variables['string'] - getInitDir('local','string'))
-    self.local_dataframes = [None] * (local_variables['dataframe'] - getInitDir('local','dataframe'))
+    # self.local_dataframes = [None] * (local_variables['dataframe'] - getInitDir('local','dataframe'))
+    self.local_dataframes = {}
 
     # Temporary variables
     self.temp_bools      = [None] * (temp_variables['bool'] - getInitDir('temp','bool'))
     self.temp_ints       = [None] * (temp_variables['int'] - getInitDir('temp','int'))
     self.temp_floats     = [None] * (temp_variables['float'] - getInitDir('temp','float'))
     self.temp_strings    = [None] * (temp_variables['string'] - getInitDir('temp','string'))
-    self.temp_dataframes = [None] * (temp_variables['dataframe'] - getInitDir('temp', 'dataframe'))
+    # self.temp_dataframes = [None] * (temp_variables['dataframe'] - getInitDir('temp', 'dataframe'))
 
   def getValue(self, address):
     scope = getScope(address)
@@ -82,26 +83,61 @@ class ActivationRecord:
       print 'Unknown address on setting value'
       # exit(1)
 
+
+# =========================================================
+# DATAFRAMES
+# =========================================================
+
+  # =======================================================
+  # ACCESS
+  # =======================================================
+
+  def accessRow(self, title, row):
+    return self.local_dataframes[title]['data'][row]
+
+  def accessCol(self, title, col):
+    return self.local_dataframes[title]['data'][:,col]
+
+  def accessDf(self, title):
+    return self.local_dataframes[title]
+
+  def accessTags(self, title):
+    return self.local_dataframes[title]['tags']
+
+  def accessCell(self, title, row, col):
+    return self.local_dataframes[title]['data'][row][col]
+
+  def accessData(self, title):
+    return self.local_dataframes[title]['data']
+
+  def accessHeaders(self, title):
+    return self.local_dataframes[title]['headers']
+
+  # =======================================================
+  # DYNAMIC BIZZ
+  # =======================================================
+
+  # def bindRows(self, df1, df2, row1, row2, scope):
+
+
   # Dataframe memory management
-  def generateMemory(self, dataframe, address):
-    # Calculate offset / size
-    offset = 0;
-    end_address = address + offset
+  # def generateMemory(self, dataframe, address):
+  #   # Calculate offset / size
+  #   offset = 0;
+  #   end_address = address + offset
 
-    # Check if df is TOO BIG
-    if not between(end_address, getInitDir('local', 'dataframe'), getInitDir('temp', 'bool')):
-      print 'Memory limit reached'
-      exit(1)
+  #   # Check if df is TOO BIG
+  #   if not between(end_address, getInitDir('local', 'dataframe'), getInitDir('temp', 'bool')):
+  #     print 'Memory limit reached'
+  #     exit(1)
 
-    # TODO: generate memory
+  # def bindRowDataframe(self, row1, row2):
+  #   print 'Bind rows'
 
-  def bindRowDataframe(self, row1, row2):
-    print 'Bind rows'
+  # def bindColDataframe(self, col1, col2):
+  #   print 'Bind columns'
 
-  def bindColDataframe(self, col1, col2):
-    print 'Bind columns'
-
-  def reallocateMemory(self, dataframe):
-    print 'Reallocate memory'
+  # def reallocateMemory(self, dataframe):
+  #   print 'Reallocate memory'
 
   # TODO: understand get value for data frames

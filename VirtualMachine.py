@@ -39,7 +39,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     resultAddress = q['result']
     operator = getOpString(q['operator'])
 
-    # print (q['operator'], leftOp, rightOp, resultAddress)
+    #print (q['operator'], leftOp, rightOp, resultAddress)
 
 # =========================================================
 # Arithmetic
@@ -222,6 +222,12 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     elif operator == 'Corr_Headers':
       print 'Correlate headers'
 
+    elif operator == 'Rbind':
+      print 'R BIND MATHAFACKASSSSSSS'
+
+    elif operator == 'Cbind':
+      print 'C BIND MOTHOFUCKERRRRRRS'
+
 # =========================================================
 # Printing
 # =========================================================
@@ -234,25 +240,95 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     # Printing dataframes
 
     elif operator == 'Print_Col':
-      print 'Col'
+      # Go to access row quad
+      quad_count = quad_count + 1
+      # Get access values
+      q = quadruples[quad_count]
+      title = memory.getValue(q['operand1'])
+      scope = memory.getValue(q['operand2'])
+      # TODO: get column num based on headers of this df
+      col_num = memory.getValue(q['result'])
+      # Access row from memory
+      column = memory.accessRow(title, col_num, scope)
+      # Print
+      print column
 
     elif operator == 'Print_Row':
-      print 'Row'
+      # Go to access row quad
+      quad_count = quad_count + 1
+      # Get access values
+      q = quadruples[quad_count]
+      title = memory.getValue(q['operand1'])
+      scope = memory.getValue(q['operand2'])
+      row_num = memory.getValue(q['result'])
+      # Access row from memory
+      row = memory.accessRow(title, row_num, scope)
+      # Print
+      print row
 
     elif operator == 'Print_DF':
-      print 'Dataframe'
+      # Go to access data frame quad
+      quad_count = quad_count + 1
+      # Get access values
+      q = quadruples[quad_count]
+      title = memory.getValue(q['operand1'])
+      scope = memory.getValue(q['operand2'])
+      # Access whole df
+      df = memory.accessDf(title, scope)
+      # PRINT
+      print df
 
     elif operator == 'Print_Cell':
-      print 'Print_Cell'
+      # Go to access data frame quad
+      quad_count = quad_count + 1
+      # Get access values
+      q = quadruples[quad_count]
+      title = memory.getValue(q['operand1'])
+      scope = memory.getValue(q['operand2'])
+      row_col = memory.getValue(q['result'])
+      # Get real values
+      row = row_col.split(',')[0][1:-1]
+      col = row_col.split(',')[1][0:-1]
+      # Access whole df
+      cell = memory.accessCell(title, scope, row, col)
+      # PRINT
+      print cell    
 
     elif operator == 'Print_Data':
-      print 'Print_Data'
+      # Go to access data frame quad
+      quad_count = quad_count + 1
+      # Get access values
+      q = quadruples[quad_count]
+      title = memory.getValue(q['operand1'])
+      scope = memory.getValue(q['operand2'])
+      # Access whole df
+      data = memory.accessData(title, scope)
+      # PRINT
+      print data
 
     elif operator == 'Print_Headers':
-      print 'Print_Headers'
+      # Go to access data frame quad
+      quad_count = quad_count + 1
+      # Get access values
+      q = quadruples[quad_count]
+      title = memory.getValue(q['operand1'])
+      scope = memory.getValue(q['operand2'])
+      # Access whole df
+      headers = memory.accessHeaders(title, scope)
+      # PRINT
+      print headers
 
     elif operator == 'Print_Tags':
-      print 'Print_Tags'
+      # Go to access data frame quad
+      quad_count = quad_count + 1
+      # Get access values
+      q = quadruples[quad_count]
+      title = memory.getValue(q['operand1'])
+      scope = memory.getValue(q['operand2'])
+      # Access whole df
+      tags = memory.accessTags(title, scope)
+      # PRINT
+      print tags
 
 # =========================================================
 # Functions

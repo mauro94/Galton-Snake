@@ -16,7 +16,8 @@ class Memory:
     self.global_ints       = [None] * (global_variables['int'] - getInitDir('global', 'int'))
     self.global_floats     = [None] * (global_variables['float'] - getInitDir('global', 'float'))
     self.global_strings    = [None] * (global_variables['string'] - getInitDir('global', 'string'))
-    self.global_dataframes = [None] * (global_variables['dataframe'] - getInitDir('global', 'dataframe'))
+    # self.global_dataframes = [None] * (global_variables['dataframe'] - getInitDir('global', 'dataframe'))
+    self.global_dataframes = {}
 
     # Constants
     self.const_bools      = [None] * (const_variables['bool'] - getInitDir('constant', 'bool'))
@@ -142,47 +143,91 @@ class Memory:
       elif value['type'] == 4:
         self.const_strings[value['address'] - getInitDir('constant','string')] = value['val']
 
+# =========================================================
+# DATAFRAME MEMORY
+# =========================================================
+
+  def accessRow (self, title, row, scope):
+    if scope == 1:
+      return self.global_dataframes[title]['data'][row]
+    else:
+      return activationRecord.accessRow(title, row)
+
+  def accessCol (self, title, col, scope):
+    if scope == 1:
+      return self.global_dataframes[title]['data'][:,col]
+    else:
+      return activationRecord.accessCol(title, col)
+
+  def accessDf (self, title, scope):
+    if scope == 1:
+      return self.global_dataframes[title]
+    else:
+      return activationRecord.accessDf(title)
+
+  def accessTags (self, title, scope):
+    if scope == 1:
+      return self.global_dataframes[title]['tags']
+    else:
+      return activationRecord.accessTags(title)
+
+  def accessCell (self, title, scope, row, col):
+    if scope == 1:
+      return self.global_dataframes[title]['data'][row][col]
+    else:
+      return activationRecord.accessCell(title, row, col)
+
+  def accessData (self, title, scope):
+    if scope == 1:
+      return self.global_dataframes[title]['data']
+    else:
+      return activationRecord.accessData(title)
+
+  def accessHeaders (self, title):
+    if scope == 1:
+      return self.global_dataframes[title]['headers']
+    else:
+      return activationRecord.accessHeaders(title)
+
   # Dataframe memory management
-  def generateMemory(self, dataframe, address):
-    # Calculate offset / size
-    offset = 0;
-    end_address = address + offset
+  # def generateMemory(self, dataframe, address):
+  #   # Calculate offset / size
+  #   offset = 0;
+  #   end_address = address + offset
 
-    scope = getScope(address)
+  #   scope = getScope(address)
 
-    if scope == 'global':
-      # Check if dataframe is TOO big
-      if not between(end_address, getInitDir('global', 'dataframe'), getInitDir('local', 'bool')):
-        print 'Memory limit reached'
-        exit(1)
+  #   if scope == 'global':
+  #     # Check if dataframe is TOO big
+  #     if not between(end_address, getInitDir('global', 'dataframe'), getInitDir('local', 'bool')):
+  #       print 'Memory limit reached'
+  #       exit(1)
 
-      # MAKE MEMORY GREAT AGAIN!
+  #     # MAKE MEMORY GREAT AGAIN!
 
-    elif scope == 'local':
-      activationRecord = stackTop(self.memory_stack)
-      activationRecord.generateMemory(dataframe, address)
+  #   elif scope == 'local':
+  #     activationRecord = stackTop(self.memory_stack)
+  #     activationRecord.generateMemory(dataframe, address)
 
+  # def bindRowDataframe(self, row1, row2):
+  #   print 'Bind rows'
 
-  def bindRowDataframe(self, row1, row2):
-    print 'Bind rows'
+  # def bindColDataframe(self, col1, col2):
+  #   print 'Bind columns'
 
-  def bindColDataframe(self, col1, col2):
-    print 'Bind columns'
+  # def reallocateMemory(self, address, old_size, new_size):
+  #   scope = getScope(address)
 
-  def reallocateMemory(self, address, old_size, new_size):
-    scope = getScope(address)
+  #   if scope == 'global':
+  #     location = address - getInitDir('global', 'dataframe')
+  #     # New data allocation
+  #     for i in range(new_size):
+  #       self.global_dataframes.append(self.global_dataframes[location+i])
 
-    if scope == 'global':
-      location = address - getInitDir('global', 'dataframe')
-      # New data allocation
-      for i in range(new_size):
-        self.global_dataframes.append(self.global_dataframes[location+i])
+  #     new_location = address + len(self.global_dataframes) - location
 
-      new_location = address + len(self.global_dataframes) - location
-
-      # Point to new data
-      for i in range(old_size):
-        self.global_dataframes[location+i] = '(' + str(new_location + i) + ')'
-
+  #     # Point to new data
+  #     for i in range(old_size):
+  #       self.global_dataframes[location+i] = '(' + str(new_location + i) + ')'
 
   # TODO: understand get value for data frames
