@@ -1,11 +1,6 @@
 main: {
-	dataframe(var6, ["1","2","3"], file.csv);
-
-	printCell var6[2][3];
-	printCol var6.col(2);
-	printRow var6.row(2);
-	printHeaders var6;
-	printTags var6;
-
-	correlate(var5, var6, 0.9);
+	int A[3][3];
+	int z,x,c,v,b;
+	fill A[][] = [[1,2,3],[4,5,6]];
+	print A[1][1];
 }

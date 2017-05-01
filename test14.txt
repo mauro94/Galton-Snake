@@ -1,0 +1,17 @@
+main: {
+	int A[10], i;
+
+	i = 0;
+
+	while(i < 10) {
+		A[i] = i;
+		i = i + 1;
+	}
+
+	i = 0;
+
+	while(i < 10) {
+		print A[i];
+		i = i + 1;
+	}
+}

@@ -48,9 +48,9 @@ reserved = {
    'float' : 'float',
    'string' : 'string',
    'bool' : 'bool',
-   'null' : 'null',
    'true' : 'true',
-   'false' : 'false'
+   'false' : 'false',
+   'fill' : 'fill'
 }
 
 # Tokens
@@ -176,6 +176,8 @@ varCounter = 0          # local variable counter
 callFunc_scopes = []    # stack of id of function call
 pointers = []           # pointer stack
 array_counter = 0       # value counter array
+dim_counter = 0         # dimension counter for array access
+array_location = 0       # array location during assignment
 array_size = 0          # array size
 array_id = ''           # current array id
 dimension_data = None   # current dimension data for array access
@@ -215,18 +217,19 @@ def p_ACCESS_ROW(p):
     '''ACCESS_ROW : id SA_FIND_DF period row lPar EXP rPar SA_DF_ACCESS_1'''
 
 def p_ASSIGNMENT(p):
-    '''ASSIGNMENT : id SA_FIND_ID SA_EXP_1_ID equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
+    '''ASSIGNMENT : fill id SA_ARR_20 ASSIGNMENT_ARR_COUNT SA_ARR_19 SA_ARR_22 equal SA_EXP_ADD_OP lSqBr ASSIGNMENT_ARR_DIM rSqBr semi_colon
+                  | id SA_FIND_ID SA_EXP_1_ID equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
                   | VAR_ARR equal SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 semi_colon
-                  | VAR_ARR equal SA_EXP_ADD_OP CALLFUNC SA_EXP_10 
-                  | id SA_FIND_ID SA_ARR_19 SA_ARR_20 ASSIGNMENT_ARR_COUNT SA_ARR_22 equal SA_EXP_ADD_OP ASSIGNMENT_ARR_DIM semi_colon '''
+                  | VAR_ARR equal SA_EXP_ADD_OP CALLFUNC SA_EXP_10 '''
 
 def p_ASSIGNMENT_ARR_COUNT(p):
-    '''ASSIGNMENT_ARR_COUNT : lSqBr SA_ARR_21 rSqBr ASSIGNMENT_ARR_COUNT
-                            | lSqBr SA_ARR_21 rSqBr'''
+    '''ASSIGNMENT_ARR_COUNT : lSqBr rSqBr SA_ARR_21 ASSIGNMENT_ARR_COUNT
+                            | lSqBr rSqBr SA_ARR_21'''
 
 def p_ASSIGNMENT_ARR_DIM(p):
-    '''ASSIGNMENT_ARR_DIM : lSqBr SA_ARR_20 ASSIGNMENT_ARR_EXP rSqBr ASSIGNMENT_ARR_DIM
-                          | lSqBr SA_ARR_20 ASSIGNMENT_ARR_EXP rSqBr'''
+    '''ASSIGNMENT_ARR_DIM : ASSIGNMENT_ARR_EXP
+                          | lSqBr SA_ARR_24 ASSIGNMENT_ARR_EXP SA_ARR_25 rSqBr coma ASSIGNMENT_ARR_DIM
+                          | lSqBr SA_ARR_24 ASSIGNMENT_ARR_EXP SA_ARR_25 rSqBr'''
 
 def p_ASSIGNMENT_ARR_EXP(p):
     '''ASSIGNMENT_ARR_EXP : EXP SA_ARR_23 coma ASSIGNMENT_ARR_EXP
@@ -422,7 +425,6 @@ def p_VAR_CTE(p):
                | cte_string SA_CREATE_CONST SA_EXP_1_CTE
                | true SA_CREATE_CONST SA_EXP_1_CTE 
                | false SA_CREATE_CONST SA_EXP_1_CTE 
-               | null SA_CREATE_CONST SA_EXP_1_CTE
                | CALLFUNC_EXP'''
 
 
@@ -523,16 +525,6 @@ def p_SA_CREATE_CONST(p):
         cte = True
       else:
         cte = False
-    # integer
-    elif isinstance(constant, int):
-      # define constant
-      cte = int(constant)
-      # validate curret sign
-      if current_sign == '-':
-        cte *= -1
-        constant = str(cte)
-      #define type code
-      t = 2
     # float
     elif isinstance(constant, float):
       # define constant
@@ -543,6 +535,16 @@ def p_SA_CREATE_CONST(p):
         constant = str(cte)
       #define type code
       t = 3
+    # integer
+    elif isinstance(constant, int):
+      # define constant
+      cte = int(constant)
+      # validate curret sign
+      if current_sign == '-':
+        cte *= -1
+        constant = str(cte)
+      #define type code
+      t = 2
     # string
     elif isinstance(constant, str):
       # define constant
@@ -1522,20 +1524,25 @@ def p_SA_ARR_16(p):
   # define inferior limit
   inf = 0
   # get superior limit
-  sup = functionDirectory[current_scope]['varTable'][array_id]['dimension'][current_dim]['size']-1
+  sup = functionDirectory[current_scope]['varTable'][array_id]['dimension'][current_dim]['size']
   # create quadruple
-  newQuadruple(quadruples, getOpCode('Ver'), op, inf, sup)
+  newQuadruple(quadruples, getOpCode('Ver'), op, inf, sup-1)
   # update quadruple counter
   cont += 1
   # check next dim not null
-  print len(functionDirectory[current_scope]['varTable'][array_id]['dimension'])-1
   if current_dim < len(functionDirectory[current_scope]['varTable'][array_id]['dimension'])-1:
     # get operand
     aux = stackPop(operands)
     # calc mDim
     mDim = array_access_R / sup
+      # verify if string is in constants table
+    if not constantTable.has_key(str(mDim)):
+      #create constant
+      constantTable[str(mDim)] = {'type': getTypeCode('int'), 'address': constVarCount['int'], 'val': mDim}
+      #increase constant variable counter
+      constVarCount['int'] += 1
     # create quadruple
-    newQuadruple(quadruples, getOpCode('*'), aux, mDim, str(tempVarCount[current_scope][getTypeString(getTypeCode('int'))]))
+    newQuadruple(quadruples, getOpCode('*'), aux, constantTable[str(mDim)]['address'], tempVarCount[current_scope][getTypeString(getTypeCode('int'))])
     # update quadruple counter
     cont += 1
     # push to operands
@@ -1553,7 +1560,7 @@ def p_SA_ARR_16(p):
     # get operand
     aux1 = stackPop(operands)
     # create quadruple
-    newQuadruple(quadruples, getOpCode('+'), aux1, aux2, str(tempVarCount[current_scope][getTypeString(getTypeCode('int'))]))
+    newQuadruple(quadruples, getOpCode('+'), aux1, aux2, tempVarCount[current_scope][getTypeString(getTypeCode('int'))])
     # update quadruple counter
     cont += 1
     # push to operands
@@ -1618,7 +1625,12 @@ def p_SA_ARR_19(p):
   # Global Variables
   global array_id
   # set current array id
-  array_id = p[-2]
+  array_id = p[-3]
+  # search for id in current varTable and in global varTable
+  if not (functionDirectory[current_scope]['varTable'].has_key(array_id) or functionDirectory['global']['varTable'].has_key(array_id)):
+    # print error message
+    print("ID does not exist. ID: '%s'" % array_id)
+    exit(1)
   # validate current id is dimensioned var
   if not len(functionDirectory[current_scope]['varTable'][array_id]['dimension']) > 0:
     print("Incorrect variable type. Array variable required.")
@@ -1630,9 +1642,9 @@ def p_SA_ARR_19(p):
 def p_SA_ARR_20(p):
   '''SA_ARR_20 : empty'''
   # Global Variables
-  global array_counter, current_dim
+  global dim_counter, current_dim
   # reset array size
-  array_counter = 0
+  dim_counter = 0
   # set current dim
   current_dim = 0
 
@@ -1642,9 +1654,9 @@ def p_SA_ARR_20(p):
 def p_SA_ARR_21(p):
   '''SA_ARR_21 : empty'''
   # Global Variables
-  global array_counter
+  global dim_counter
   # reset array size
-  array_counter += 1
+  dim_counter += 1
 
 
 # Array [] finished declared
@@ -1652,11 +1664,16 @@ def p_SA_ARR_21(p):
 def p_SA_ARR_22(p):
   '''SA_ARR_22 : empty'''
   # Global Variables
-  global array_counter
+  global array_counter, array_location
   # validate current id is dimensioned var
-  if not len(functionDirectory[current_scope]['varTable'][array_id]['dimension']) == array_counter:
+  print dim_counter
+  if not len(functionDirectory[current_scope]['varTable'][array_id]['dimension']) == dim_counter:
     print("Incorrect variable type. Array variable required.")
     exit(1)
+  # set array location
+  array_location = 0
+  # reset array counter
+  array_counter = 0
 
 
 # Array values are being assigned
@@ -1664,24 +1681,50 @@ def p_SA_ARR_22(p):
 def p_SA_ARR_23(p):
   '''SA_ARR_23 : empty'''
   # Global Variables
-  global array_counter, cont, array_size, current_dim
+  global array_counter, cont, array_size, current_dim, array_location
   # get base direction
   dir = functionDirectory[current_scope]['varTable'][array_id]['address']
   # get array count
-  array_size = functionDirectory[current_scope]['varTable'][array_id]['dimension'][current_dim]['size']
+  array_size = functionDirectory[current_scope]['varTable'][array_id]['dimension'][current_dim-1]['size']
   # validate limit of array size i not exceeded
   if array_counter < array_size:
     # get operand
     op = stackPop(operands) 
     # create quadruple
-    newQuadruple(quadruples, getOpCode('='), op, None, dir+array_counter)
+    newQuadruple(quadruples, getOpCode('='), op, None, dir+array_location)
     # update quadruple counter
     cont += 1
     # update array counter
     array_counter += 1
+    # update array location
+    array_location += 1
   else:
     print("Wrong array input size.")
     exit(1)
+
+
+# Array values are being assigned
+# Validate dimension count is correct
+def p_SA_ARR_24(p):
+  '''SA_ARR_24 : empty'''
+  # Global Variables
+  global current_dim
+  # validate number of dimensions with count
+  if not current_dim <= dim_counter:
+    print("Wrong array declaration size.")
+    exit(1)
+
+
+# Array values are being assigned
+# Update current dim
+def p_SA_ARR_25(p):
+  '''SA_ARR_25 : empty'''
+  # Global Variables
+  global current_dim, array_counter
+  # update current dim
+  current_dim += 1
+  # reset array counter
+  array_counter = 0
 
 # --------- EXTRA GRAMMARS / PRINT QUADRUPPLES ---------
 # Print declared

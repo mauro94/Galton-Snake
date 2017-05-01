@@ -1,0 +1,42 @@
+func void func1(int w): {
+	int i;
+	i = 0;
+
+	while(i <= w) {
+		print i;
+		i = i + 1;
+	}
+}
+
+func int func2(int p, int o): {
+	int x;
+	x = p + o;
+	return x;
+}
+
+func bool func3(int n, int m): {
+	return n == m;
+}
+
+main: {
+	int a, b, c;
+
+	a = 2;
+	b = 4;
+	c = 6;
+
+	a = func2(b, c);
+	print a;
+	a = func2(1,1);
+	print a;
+	a = func2(func2(1,1),func2(1,1));
+	print a;
+	a = func2( func2( func2(1,1), func2(1,1)), func2( func2(1,1), func2(1,1)));
+	print a;
+
+	call func1(5);
+
+	if (func3(1,1)) {
+		print "success";
+	}
+}

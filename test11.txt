@@ -1,0 +1,44 @@
+main: {
+	int a, b, c;
+	float z, x;
+
+	a = 5;
+	b = 7;
+	c = 2;
+
+	print a;
+	print b;
+	print c;
+
+	print a + b;
+	print a + c;
+	
+	print b - a;
+	print b - c;
+
+	print c * a;
+	print c * b;
+
+	print a / c;
+	print b / c;
+
+	print a > b;
+	print a < b;
+
+	print a >= c;
+	print a <= c;
+
+	print a == a;
+	print a == b;
+
+	print a != a;
+	print a != b;
+
+	z = 4.6;
+	x = 2.1;
+
+	print z / x;
+	print x / z;
+
+	print b / x;
+}
