@@ -7,7 +7,6 @@ class ActivationRecord:
     self.local_ints       = [None] * (local_variables['int'] - getInitDir('local','int'))
     self.local_floats     = [None] * (local_variables['float'] - getInitDir('local','float'))
     self.local_strings    = [None] * (local_variables['string'] - getInitDir('local','string'))
-    # self.local_dataframes = [None] * (local_variables['dataframe'] - getInitDir('local','dataframe'))
     self.local_dataframes = {}
 
     # Temporary variables
@@ -15,7 +14,6 @@ class ActivationRecord:
     self.temp_ints       = [None] * (temp_variables['int'] - getInitDir('temp','int'))
     self.temp_floats     = [None] * (temp_variables['float'] - getInitDir('temp','float'))
     self.temp_strings    = [None] * (temp_variables['string'] - getInitDir('temp','string'))
-    # self.temp_dataframes = [None] * (temp_variables['dataframe'] - getInitDir('temp', 'dataframe'))
 
   def getValue(self, address):
     scope = getScope(address)
@@ -50,7 +48,7 @@ class ActivationRecord:
       return value
     else:
       print 'Unknown address on getting value'
-      # exit(1)
+      exit(1)
 
   def setValue(self, value, address):
     scope = getScope(address)
@@ -81,7 +79,7 @@ class ActivationRecord:
           self.temp_strings[address - getInitDir('temp','string')] = value
     else:
       print 'Unknown address on setting value'
-      # exit(1)
+      exit(1)
 
 
 # =========================================================
@@ -138,25 +136,3 @@ class ActivationRecord:
 
   def appendRow(self, title, row):
       self.local_dataframes[title]['data'].append(row)
-
-  # Dataframe memory management
-  # def generateMemory(self, dataframe, address):
-  #   # Calculate offset / size
-  #   offset = 0;
-  #   end_address = address + offset
-
-  #   # Check if df is TOO BIG
-  #   if not between(end_address, getInitDir('local', 'dataframe'), getInitDir('temp', 'bool')):
-  #     print 'Memory limit reached'
-  #     exit(1)
-
-  # def bindRowDataframe(self, row1, row2):
-  #   print 'Bind rows'
-
-  # def bindColDataframe(self, col1, col2):
-  #   print 'Bind columns'
-
-  # def reallocateMemory(self, dataframe):
-  #   print 'Reallocate memory'
-
-  # TODO: understand get value for data frames

@@ -16,7 +16,6 @@ class Memory:
     self.global_ints       = [None] * (global_variables['int'] - getInitDir('global', 'int'))
     self.global_floats     = [None] * (global_variables['float'] - getInitDir('global', 'float'))
     self.global_strings    = [None] * (global_variables['string'] - getInitDir('global', 'string'))
-    # self.global_dataframes = [None] * (global_variables['dataframe'] - getInitDir('global', 'dataframe'))
     self.global_dataframes = {}
 
     # Constants
@@ -227,7 +226,6 @@ class Memory:
       return activationRecord.getRowSize(title)
 
   def appendColumn(self, title, column, scope):
-    print self.global_dataframes[title]['data']
     i = 0
     if scope == 1:
       for c in self.global_dataframes[title]['data']:
@@ -235,54 +233,9 @@ class Memory:
         i += 1
     else:
       activationRecord.appendColumn(title, column)
-    print "WITH APPEND"
-    print self.global_dataframes[title]['data']
 
   def appendRow(self, title, row, scope):
     if scope == 1:
       self.global_dataframes[title]['data'].append(row)
     else:
       activationRecord.appendRow(title, row)
-
-  # Dataframe memory management
-  # def generateMemory(self, dataframe, address):
-  #   # Calculate offset / size
-  #   offset = 0;
-  #   end_address = address + offset
-
-  #   scope = getScope(address)
-
-  #   if scope == 'global':
-  #     # Check if dataframe is TOO big
-  #     if not between(end_address, getInitDir('global', 'dataframe'), getInitDir('local', 'bool')):
-  #       print 'Memory limit reached'
-  #       exit(1)
-
-  #     # MAKE MEMORY GREAT AGAIN!
-
-  #   elif scope == 'local':
-  #     activationRecord = stackTop(self.memory_stack)
-  #     activationRecord.generateMemory(dataframe, address)
-
-  # def bindRowDataframe(self, row1, row2):
-  #   print 'Bind rows'
-
-  # def bindColDataframe(self, col1, col2):
-  #   print 'Bind columns'
-
-  # def reallocateMemory(self, address, old_size, new_size):
-  #   scope = getScope(address)
-
-  #   if scope == 'global':
-  #     location = address - getInitDir('global', 'dataframe')
-  #     # New data allocation
-  #     for i in range(new_size):
-  #       self.global_dataframes.append(self.global_dataframes[location+i])
-
-  #     new_location = address + len(self.global_dataframes) - location
-
-  #     # Point to new data
-  #     for i in range(old_size):
-  #       self.global_dataframes[location+i] = '(' + str(new_location + i) + ')'
-
-  # TODO: understand get value for data frames

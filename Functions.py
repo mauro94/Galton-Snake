@@ -129,7 +129,7 @@ def getScope (address):
     return 'constant'
   else:
     print('Address non existent')
-    # exit(1)
+    exit(1)
 
 def between (value, low, high):
   return (low <= value < high)
@@ -141,7 +141,7 @@ def column(dataframe, column):
 # =======================================================
 # CORRELATIONS
 # =======================================================
-def correlateTags(tagsOne, tagsTwo, threshold):
+def correlateHeaders(tagsOne, tagsTwo, threshold):
   print 'correlate'
 
 def correlateData(dataOne, dataTwo, threshold):

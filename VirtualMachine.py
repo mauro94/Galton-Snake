@@ -13,7 +13,12 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
   memory.initializeConstants(constants)
 
   # Create memory for main function
-  main = memory.createActivationRecord(localVarCount['main'], tempVarCount['main'])
+  try:
+    main = memory.createActivationRecord(localVarCount['main'], tempVarCount['main'])
+  except KeyError:
+    print 'Main function not declared'
+    exit(1)
+
   memory.changeActivationRecord(main)
 
   # Quadruple counter
@@ -302,13 +307,12 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       title = memory.getValue(q['operand1'])
       scope = 1
       row_num = memory.getValue(q['result'])
-      print row_num
       # Access row from memory
       row = memory.accessRow(title, row_num, scope)
       # Print
       print row
 
-    elif operator == 'PrintDF':
+    elif operator == 'PrintDf':
       # Go to access data frame quad
       title = memory.getValue(resultAddress)
       scope = 1
@@ -333,7 +337,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # PRINT
       print cell    
 
-    elif operator == 'PrintData':
+    elif operator == 'PrintDfData':
       # Go to access data frame quad
       # Get access values
       title = memory.getValue(resultAddress)
@@ -428,13 +432,6 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Push to call stack
       stackPush(call_stack, ar)
 
-    elif operator == 'Prep':
-      # Create memory for dataframe
-      # TODO: get dataframe info
-      # DATAFRAMES!!
-      print 'Prep'
-
-
 # =========================================================
 # Input
 # =========================================================
@@ -442,8 +439,8 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     elif operator == 'Read':
       # Get filename
       filename = memory.getValue(resultAddress)
-      # title = memory.getValue(leftOp)
-      title = 'var6'
+      title = memory.getValue(leftOp)
+      scope = memory.getValue(rightOp)
 
       # Read csv file
       with open(filename, 'rb') as csvfile:
@@ -461,13 +458,8 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
           except StopIteration:
             break
 
-      memory.createDataframe(dataframes[title], title)
-      # Add every column to a new matrix element
-      # for m in matrix:
-
-
-    # TODO: check what matrix is and store in memory
-    # TODO: generate memory for DF
+      # Check if df is global or local
+      memory.createDataframe(dataframes[scope][title], title)
 
 # =========================================================
 # Procedure end
@@ -479,7 +471,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     # END
     elif operator == 'End':
       memory.removeActivationRecord()
-      # exit(1)
+      exit(1)
 
     else:
       print operator
