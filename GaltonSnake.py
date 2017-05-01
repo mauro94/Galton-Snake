@@ -348,7 +348,7 @@ def p_PRINT_DF(p):
     '''PRINT_DF : printDf id SA_FIND_DF SA_DF_PRINT semi_colon '''
 
 def p_PRINT_DF_DATA(p):
-    '''PRINT_DF_DATA : printData id SA_FIND_DF SA_DF_PRINTTAGS_1 semi_colon '''
+    '''PRINT_DF_DATA : printData id SA_FIND_DF SA_DF_PRINT_DATA semi_colon '''
 
 def p_PRINT_HEADERS(p):
     '''PRINT_HEADERS : printHeaders id SA_FIND_DF SA_DF_PRINTHEADERS_1 semi_colon '''
