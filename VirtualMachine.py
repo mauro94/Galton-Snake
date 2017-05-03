@@ -249,6 +249,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
         headOne = one['headers'][i]
         headTwo = two['headers'][i]
         correlateData(colOne, headOne, colTwo, headTwo, threshold)
+        print ''
 
       # average = totalCorrelation/len(columnsOne)
 
@@ -258,11 +259,15 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       #   print 'Data is not correlated, value: ' + str(average)
 
     elif operator == 'CorrHeaders':
-      one = memory.getDataframe(memory.getValue(leftOp))
-      two = memory.getDataframe(memory.getValue(rightOp))
+      titleOne = memory.getValue(leftOp)
+      one = memory.getDataframe(titleOne)
+      titleTwo = memory.getValue(rightOp)
+      two = memory.getDataframe(titleTwo)
       threshold = memory.getValue(resultAddress)
 
+      print 'Correlate Headers from: ' + titleOne + ', ' + titleTwo
       correlateHeaders(one['headers'], two['headers'], threshold)
+      print ''
 
     elif operator == 'RowBind':
        # Title of dataframe that gets data
@@ -341,6 +346,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Print
       print 'Print Column ' + str(col_num) + ' from ' + title
       print column
+      print ''
 
     elif operator == 'PrintRow':
       # Go to access row quad
@@ -355,6 +361,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Print
       print 'Print Row ' + str(row_num) + ' from ' + title
       print row
+      print ''
 
     elif operator == 'PrintDf':
       # Go to access data frame quad
@@ -393,7 +400,8 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       cell = memory.accessCell(title, scope, row, col)
       # PRINT
       print 'Print Cell [' + str(row) + ', ' + str(col) + '] from ' + title
-      print cell    
+      print cell 
+      print ''   
 
     elif operator == 'PrintDfData':
       # Go to access data frame quad
@@ -429,7 +437,8 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # PRINT
       print 'Tags from ' + title
       print tags
-
+      print ''
+      
 # =========================================================
 # Functions
 # =========================================================

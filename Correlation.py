@@ -21,7 +21,7 @@ pool = {
 }
 
 def beginCheck(headers):
-  totalSum = []
+  totalSum = [0,0,0,0]
 
   for h in headers:
     word = cleanWord(h)
@@ -64,5 +64,5 @@ def cleanWord(word):
   word.replace('_', ' ')
   word.replace('.', ' ')
   word.replace('-', ' ')
-  word.lower()
+  return word.lower()
 

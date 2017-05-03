@@ -156,8 +156,9 @@ def correlateHeaders(headsOne, headsTwo, threshold):
     one = beginCheck(headsOne)
     two = beginCheck(headsTwo)
     # Divide weights obtained to find possible correlation
-    divide = []
-    for i in range(len(one)):
+    divide = [0,0,0,0]
+    
+    for i in range(4):
       if two[i] == 0 or one[i] == 0:
         divide[i] = 0
       else:
