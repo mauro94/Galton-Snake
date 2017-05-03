@@ -12,5 +12,5 @@ main: {
   printData d2;
 
 	correlate(d1, d2, 0.9);
-  correlate(d2, d2, 0.9);
+  correlateHeaders(d2, d1, 0.9);
 }

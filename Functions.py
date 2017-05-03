@@ -156,8 +156,9 @@ def correlateHeaders(headsOne, headsTwo, threshold):
     one = beginCheck(headsOne)
     two = beginCheck(headsTwo)
     # Divide weights obtained to find possible correlation
-    divide = []
-    for i in range(len(one)):
+    divide = [0,0,0,0]
+    
+    for i in range(4):
       if two[i] == 0 or one[i] == 0:
         divide[i] = 0
       else:
@@ -177,32 +178,36 @@ def correlateData(columnOne, headerOne, columnTwo, headerTwo, threshold):
     correlationPrint(headerOne, headerTwo, 1, 0)
     return 1
 
-  columnOne = list(map(lambda x: float(x), columnOne))
-  columnTwo = list(map(lambda x: float(x), columnTwo))
-  # Get averages
-  meanOne = float(sum(columnOne))/len(columnOne)
-  meanTwo = float(sum(columnTwo))/len(columnTwo)
-  # Substract averages
-  subsOne = list(map(lambda x: x - meanOne, columnOne))
-  subsTwo = list(map(lambda x: x - meanTwo, columnTwo))
-  # Calculate subsOne * subsTwo
-  multiply = list(map(lambda x,y: x * y, subsOne, subsTwo))
-  # Calculate subsOne squared
-  squareOne = list(map(lambda x: x**2, subsOne))
-  # Calcuate subsTwo squared
-  squareTwo = list(map(lambda x: x**2, subsTwo))
-  # Sum values
-  multiply = sum(multiply)
-  squareOne = sum(squareOne)
-  squareTwo = sum(squareTwo)
-  # Calculate correlation
-  temp = math.sqrt(float(squareOne) * squareTwo)
-  if not temp == 0:
-    corr = float(multiply)/temp
   else:
-    corr = 0
-  # Nice print
-  correlationPrint(headerOne, headerTwo, corr, threshold)
+    try:
+      columnOne = list(map(lambda x: float(x), columnOne))
+      columnTwo = list(map(lambda x: float(x), columnTwo))
+      # Get averages
+      meanOne = float(sum(columnOne))/len(columnOne)
+      meanTwo = float(sum(columnTwo))/len(columnTwo)
+      # Substract averages
+      subsOne = list(map(lambda x: x - meanOne, columnOne))
+      subsTwo = list(map(lambda x: x - meanTwo, columnTwo))
+      # Calculate subsOne * subsTwo
+      multiply = list(map(lambda x,y: x * y, subsOne, subsTwo))
+      # Calculate subsOne squared
+      squareOne = list(map(lambda x: x**2, subsOne))
+      # Calcuate subsTwo squared
+      squareTwo = list(map(lambda x: x**2, subsTwo))
+      # Sum values
+      multiply = sum(multiply)
+      squareOne = sum(squareOne)
+      squareTwo = sum(squareTwo)
+      # Calculate correlation
+      temp = math.sqrt(float(squareOne) * squareTwo)
+      if not temp == 0:
+        corr = float(multiply)/temp
+      else:
+        corr = 0
+      # Nice print
+      correlationPrint(headerOne, headerTwo, corr, threshold)
+    except TypeError:
+      print 'Both columns must be numeric, skipping correlation of: ' + headerOne + ', ' + headerTwo
 
 # =========================================================
 # SPECIAL PRINTS
