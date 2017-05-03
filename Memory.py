@@ -150,8 +150,12 @@ class Memory:
   # CREATION
   # =======================================================
 
-  def createDataframe(self, dataframe, title):
-    self.global_dataframes[title] = dataframe
+  def createDataframe(self, dataframe, scope, title):
+    if scope == 1:
+      self.global_dataframes[title] = dataframe
+    else:
+      activationRecord = stackTop(self.memory_stack)
+      activationRecord.createDataframe(dataframe, title)
 
   # =======================================================
   # ACCESS
@@ -209,8 +213,15 @@ class Memory:
       activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessHeaders(title)
 
+  def getDataframe (self, title):
+    try:
+      return self.global_dataframes[title]
+    # If not global return from local memory
+    except KeyError:
+      return stackTop(self.memory_stack).getDataframe(title)
+
   # =======================================================
-  # DYNAMIC BIZZ
+  # DYNAMIC MEMORY METHODS
   # =======================================================
 
   def getColSize(self, title, scope):

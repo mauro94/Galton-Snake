@@ -222,10 +222,47 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
 
     # Correlations
     elif operator == 'Corr':
-      print 'Correlate'
+      titleOne = memory.getValue(leftOp)
+      titleTwo = memory.getValue(rightOp)
+      one = memory.getDataframe(titleOne)
+      two = memory.getDataframe(titleTwo)
+      threshold = memory.getValue(resultAddress)
+
+      # Fancy print
+      print 'Correlate - ' + titleOne + ', ' + titleTwo
+
+      # Correlation values acumulator
+      totalCorrelation = 0
+
+      if not len(one['data']) == len(two['data']):
+        print 'Matrices need to have same number of columns for correlation to be calculated'
+        exit(1)
+
+      # Transpose matrix to get columns
+      columnsOne = zip(*one['data'])
+      columnsTwo = zip(*two['data'])
+
+      # Iterate all columns to get correlations
+      for i in range(len(columnsOne)):
+        colOne = columnsOne[i]
+        colTwo = columnsTwo[i]
+        headOne = one['headers'][i]
+        headTwo = two['headers'][i]
+        totalCorrelation += correlateData(colOne, headOne, colTwo, headTwo, threshold)
+
+      average = totalCorrelation/len(columnsOne)
+
+      if average > threshold:
+        print 'Data is correlated, value: ' + str(average)
+      else:
+        print 'Data is not correlated, value: ' + str(average)
 
     elif operator == 'CorrHeaders':
-      print 'Correlate headers'
+      one = memory.getDataframe(memory.getValue(leftOp))
+      two = memory.getDataframe(memory.getValue(rightOp))
+      threshold = memory.getValue(resultAddress)
+
+      correlateHeaders(one['headers'], two['headers'], threshold)
 
     elif operator == 'RowBind':
        # Title of dataframe that gets data
@@ -286,7 +323,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Get access values
       q = quadruples[quad_count]
       title = memory.getValue(q['operand1'])
-      scope = 1
+      scope = q['operand2']
       # TODO: get column num based on headers of this df
       col_num = memory.getValue(q['result'])
       if isinstance(col_num, str):
@@ -305,7 +342,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Get access values
       q = quadruples[quad_count]
       title = memory.getValue(q['operand1'])
-      scope = 1
+      scope = q['operand2']
       row_num = memory.getValue(q['result'])
       # Access row from memory
       row = memory.accessRow(title, row_num, scope)
@@ -315,7 +352,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     elif operator == 'PrintDf':
       # Go to access data frame quad
       title = memory.getValue(resultAddress)
-      scope = 1
+      scope = q['operand2']
       # Access whole df
       df = memory.accessDf(title, scope)
       # PRINT
@@ -325,7 +362,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Go to access data frame quad
       # Get access values
       title = memory.getValue(leftOp)
-      scope = 1
+      scope = q['operand2']
       row_col = memory.getValue(resultAddress)
       # Get real values
       row = row_col.split(',')[0][1:]
@@ -341,7 +378,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Go to access data frame quad
       # Get access values
       title = memory.getValue(resultAddress)
-      scope = 1
+      scope = q['operand2']
       # Access whole df
       data = memory.accessData(title, scope)
       # PRINT
@@ -350,7 +387,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     elif operator == 'PrintHeaders':
       # Get access values
       title = memory.getValue(resultAddress)
-      scope = 1
+      scope = q['operand2']
       # Access whole df
       headers = memory.accessHeaders(title, scope)
       # PRINT
@@ -359,7 +396,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
     elif operator == 'PrintTags':
       # Get access values
       title = memory.getValue(resultAddress)
-      scope = 1
+      scope = q['operand2']
       # Access whole df
       tags = memory.accessTags(title, scope)
       # PRINT
@@ -447,19 +484,19 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
         reader = csv.reader(csvfile)
 
         row = reader.next()
-        dataframes[title]['headers'] = row[1:]
+        dataframes[scope][title]['headers'] = row[1:]
 
         while True:
           try:
             row = reader.next()[1:]
-            dataframes[title]['data'].append(row)
+            dataframes[scope][title]['data'].append(row)
           except csv.Error:
             print "CSV error: error on creating dataframe"
           except StopIteration:
             break
 
       # Check if df is global or local
-      memory.createDataframe(dataframes[scope][title], title)
+      memory.createDataframe(dataframes[scope][title], scope, title)
 
 # =========================================================
 # Procedure end
@@ -474,8 +511,6 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       exit(1)
 
     else:
-      print operator
-      print q['operator']
       print('Unknown operator')
       exit(1)
 

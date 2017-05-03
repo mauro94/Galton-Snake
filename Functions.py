@@ -2,6 +2,10 @@
 # Patricio Sanchez A01191893
 # Mauro Amarante A01191893
 
+# -------------------------- INCLUDES ----------------------------------
+from Correlation import *
+from numbers import Number
+
 # -------------------------- STACK OPERATIONS --------------------------
 def stackTop(stack):
 	global operands, types, operators
@@ -134,15 +138,74 @@ def getScope (address):
 def between (value, low, high):
   return (low <= value < high)
 
+def between_inclusive(value, low, high):
+  return (low <= value <= high)
+
 # -------------------------- DATAFRAME FUNCTIONS ----------------------------
 def column(dataframe, column):
     return [row[column] for row in dataframe]
 
-# =======================================================
+# =========================================================
 # CORRELATIONS
-# =======================================================
-def correlateHeaders(tagsOne, tagsTwo, threshold):
-  print 'correlate'
+# =========================================================
+def correlateHeaders(headsOne, headsTwo, threshold):
+  if headsOne == headsTwo:
+    print 'Same headers, perfect correlation'
+  else:
+    # Correlation check of words, using a pool based method
+    one = beginCheck(headsOne)
+    two = beginCheck(headsTwo)
+    # Divide weights obtained to find possible correlation
+    divide = []
+    for i in range(len(one)):
+      if two[i] == 0 or one[i] == 0:
+        divide[i] = 0
+      else:
+        divide[i] = max((float(one[i])/two[i]), (float(two[i])/one[i]))
 
-def correlateData(dataOne, dataTwo, threshold):
-  print 'correlate data'
+    if max(divide) >= threshold:
+      print 'Success, correlated, value: ' + str(max(divide))
+    else:
+      print 'Failure, not correlated, value ' + str(max(divide))
+
+def correlateData(columnOne, headerOne, columnTwo, headerTwo, threshold):
+  if not between_inclusive(threshold, 0, 1):
+    print 'Correlation threshold must be between 0 and 1'
+    exit(1)
+
+  if columnOne == columnTwo:
+    correlationPrint(headerOne, headerTwo, 1)
+    return 1
+  elif isinstance(columnOne[0], numbers.Number) or isinstance(columnTwo[0], numbers.Number):
+    # Get averages
+    meanOne = float(sum(columnOne))/len(columnOne)
+    meanTwo = float(sum(columnTwo))/len(columnTwo)
+    # Substract averages
+    subsOne = list(map(lambda x: x - meanOne, columnOne))
+    subsTwo = list(map(lambda x: x - meanTwo, columnTwo))
+    # Calculate subsOne * subsTwo
+    multiply = list(map(lambda x,y: x * y, subsOne, subsTwo))
+    # Calculate subsOne squared
+    squareOne = list(map(lambda x: x**2, subsOne))
+    # Calcuate subsTwo squared
+    squareTwo = list(map(lambda x: x**2, subsTwo))
+    # Calculate correlation
+    temp = sqrt(float(squareOne) * squareTwo)
+    corr = float(multiply)/temp
+    # Nice print
+    correlationPrint(headerOne, headerTwo, corr)
+    return corr
+  else:
+    print 'Columns must be numeric, skipping correlation of: ' + headerOne + ', ' + headerTwo
+
+# =========================================================
+# SPECIAL PRINTS
+# =========================================================
+
+def correlationPrint(headOne, headTwo, corr):
+  if corr == 1:
+    print 'Perfect positive correlation between ' + headOne + ', ' + headTwo
+  elif corr == -1:
+    print 'Perfect negative correlation between ' + headOne + ', ' + headTwo
+  else:
+    print 'Correlation value = ' + str(corr) + ' between ' + headOne + ', ' + headTwo

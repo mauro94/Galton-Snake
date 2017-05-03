@@ -101,13 +101,16 @@ class ActivationRecord:
     return self.local_dataframes[title]['data'][row]
 
   def accessCol(self, title, col):
-    return self.local_dataframes[title]['data'][:,col]
+    return column(self.local_dataframes[title]['data'], col)
 
   def accessDf(self, title):
     return self.local_dataframes[title]
 
   def accessTags(self, title):
-    return self.local_dataframes[title]['tags']
+    keyArr = []
+    for key, value in self.local_dataframes[title]['tags'].items():
+      keyArr.append(key[1:-1])
+    return keyArr
 
   def accessCell(self, title, row, col):
     return self.local_dataframes[title]['data'][row][col]
@@ -117,6 +120,9 @@ class ActivationRecord:
 
   def accessHeaders(self, title):
     return self.local_dataframes[title]['headers']
+
+  def getDataframe(self, title):
+    return self.local_dataframes[title]
 
   # =======================================================
   # DYNAMIC BIZZ
