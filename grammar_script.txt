@@ -1,0 +1,179 @@
+
+ACCESS_COL ::= 'id' SA_FIND_DF 'period' 'col' 'lPar' EXP 'rPar' SA_DF_ACCESS_1
+
+ACCESS_ROW ::= 'id' SA_FIND_DF 'period' 'row' 'lPar' EXP 'rPar' SA_DF_ACCESS_1
+
+ASSIGNMENT ::= 'fill' 'id' SA_ARR_20 ASSIGNMENT_ARR_COUNT SA_ARR_19 SA_ARR_22 'equal' SA_EXP_ADD_OP 'lSqBr' ASSIGNMENT_ARR_DIM 'rSqBr' 'semi_colon'
+              | 'id' SA_FIND_ID SA_EXP_1_ID 'equal' SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 'semi_colon'
+              | VAR_ARR 'equal' SA_EXP_ADD_OP SUPER_EXPRESSION SA_EXP_10 'semi_colon'
+              | VAR_ARR 'equal' SA_EXP_ADD_OP CALLFUNC SA_EXP_10 
+
+ASSIGNMENT_ARR_COUNT ::= 'lSqBr' 'rSqBr' SA_ARR_21 ASSIGNMENT_ARR_COUNT
+                        | 'lSqBr' 'rSqBr' SA_ARR_21
+
+ASSIGNMENT_ARR_DIM ::= ASSIGNMENT_ARR_EXP
+                      | 'lSqBr' SA_ARR_24 ASSIGNMENT_ARR_EXP SA_ARR_25 'rSqBr' 'coma' ASSIGNMENT_ARR_DIM
+                      | 'lSqBr' SA_ARR_24 ASSIGNMENT_ARR_EXP SA_ARR_25 'rSqBr'
+
+ASSIGNMENT_ARR_EXP ::= EXP SA_ARR_23 'coma' ASSIGNMENT_ARR_EXP
+                      | EXP SA_ARR_23
+
+BIND_COLS ::= 'cbind' 'lPar' 'id' SA_FIND_DF SA_DF_BINDINGS_1 'coma' ACCESS_COL 'rPar' 'semi_colon'
+             | 'cbind' 'lPar' 'id' SA_FIND_DF SA_DF_BINDINGS_1 'coma' TABLE_HEADER 'rPar' 'semi_colon' 
+
+BIND_ROWS ::= 'rbind' 'lPar' 'id' SA_FIND_DF SA_DF_BINDINGS_1 'coma' ACCESS_ROW 'rPar' 'semi_colon' 
+
+BINDINGS ::= BIND_ROWS 
+            | BIND_COLS
+
+BLOCK ::= SA_FINAL_FUNC_VALUES BLOCK_STM 
+         | SA_FINAL_FUNC_VALUES BLOCK_STM 'return' SUPER_EXPRESSION SA_RET 'semi_colon' 
+
+BLOCK_STM ::= STATEMENT BLOCK_STM 
+             | empty
+
+CALLFUNC ::= 'call' 'id' SA_FIND_FUNC_ID 'lPar' SA_CALLFUNC_2 CALLFUNC_PARAMS 'rPar' SA_CALLFUNC_5 'semi_colon' SA_CALLFUNC_6
+
+CALLFUNC_EXP ::= 'id' SA_FIND_FUNC_ID 'lPar' SA_CALLFUNC_2 CALLFUNC_PARAMS 'rPar' SA_CALLFUNC_5 SA_CALLFUNC_6 SA_CALLFUNC_7
+
+CALLFUNC_PARAMS ::= SA_FAKE_BOTTOM EXP SA_FAKE_BOTTOM_REMOVE SA_CALLFUNC_3 'coma' SA_CALLFUNC_4 CALLFUNC_PARAMS
+                   | SA_FAKE_BOTTOM EXP SA_FAKE_BOTTOM_REMOVE SA_CALLFUNC_3
+                   | empty
+
+CONDITION ::= 'if' 'lPar' SUPER_EXPRESSION 'rPar' SA_COND_1 'lBr' BLOCK 'rBr' SA_COND_2
+             | 'if' 'lPar' SUPER_EXPRESSION 'rPar' SA_COND_1 'lBr' BLOCK 'rBr' 'elseif' SA_COND_4 SA_COND_2 CONDITION_ELIF 'else' SA_COND_3 'lBr' BLOCK 'rBr' SA_COND_2 SA_COND_5
+             | 'if' 'lPar' SUPER_EXPRESSION 'rPar' SA_COND_1 'lBr' BLOCK 'rBr' 'else' SA_COND_3 'lBr' BLOCK 'rBr' SA_COND_2
+
+CONDITION_ELIF ::= 'lPar' SUPER_EXPRESSION 'rPar' SA_COND_1 'lBr' BLOCK 'rBr' 'elseif' SA_COND_4 SA_COND_2 CONDITION_ELIF
+                  | 'lPar' SUPER_EXPRESSION 'rPar' SA_COND_1 'lBr' BLOCK 'rBr'
+
+CORR_HEADERS ::= 'correlateHeaders' 'lPar' SA_DF_CORR_HEADERS_1 TABLE_HEADER 'coma' TABLE_HEADER 'coma' 'cte_float' SA_DF_CORR_HEADERS_2 'rPar' 'semi_colon' 
+
+CORR ::= 'correlate' 'lPar' 'id' SA_FIND_DF 'coma' 'id' SA_FIND_DF 'coma' 'cte_float' SA_DF_CORR 'rPar' 'semi_colon' 
+
+CORRELATION ::= CORR_HEADERS 
+               | CORR
+
+CREATE_DF ::= dataframe 'lPar' 'id' SA_NEW_DF 'coma' 'lSqBr' CREATE_DF_TAGS 'rSqBr' 'coma' file SA_DF_ADD_FILE 'rPar' 'semi_colon' 
+             | dataframe 'lPar' 'id' SA_NEW_DF 'coma' file SA_DF_ADD_FILE 'rPar' 'semi_colon' 
+
+CREATE_DF_TAGS ::= 'cte_string' SA_ADD_DF_TAG 'coma' CREATE_DF_TAGS
+                  | 'cte_string' SA_ADD_DF_TAG
+
+EXP ::= TERM SA_EXP_8
+       | TERM SA_EXP_8 'plus' SA_EXP_ADD_OP EXP 
+       | TERM SA_EXP_8 'minus' SA_EXP_ADD_OP EXP 
+
+EXPRESSION ::= EXP SA_EXP_7
+              | EXP SA_EXP_7 EXPRESSION_SYM EXPRESSION
+
+EXPRESSION_SYM ::= 'relop_ls' SA_EXP_ADD_OP
+                  | 'relop_gr' SA_EXP_ADD_OP
+                  | 'relop_lsequal' SA_EXP_ADD_OP
+                  | 'relop_grequal' SA_EXP_ADD_OP
+                  | 'relop_equals' SA_EXP_ADD_OP
+                  | 'relop_notequal' SA_EXP_ADD_OP
+
+FACTOR ::= 'lPar' SA_FAKE_BOTTOM SUPER_EXPRESSION SA_FAKE_BOTTOM_REMOVE 'rPar' 
+          | 'plus' SA_NEW_SIGN VAR_CTE 
+          | 'minus' SA_NEW_SIGN VAR_CTE 
+          | SA_NEW_SIGN VAR_CTE 
+
+FUNCTION ::= 'func' 'void' SA_VOID_FUNCTION 'id' SA_NEW_FUNCTION 'lPar' SA_VAR_COUNTERS PARAMETERS 'rPar' 'colon' 'lBr' INSTANTIATE BLOCK 'rBr' SA_END_FUNCTION
+            | 'func' TYPE 'id' SA_NEW_FUNCTION 'lPar' SA_VAR_COUNTERS PARAMETERS 'rPar' 'colon' 'lBr' INSTANTIATE BLOCK 'rBr' SA_END_FUNCTION
+
+INSTANTIATE ::= CREATE_DF INSTANTIATE
+               | VARS INSTANTIATE
+               | empty
+
+LOOP ::= 'while' SA_LOOP_1 'lPar' SUPER_EXPRESSION 'rPar' SA_LOOP_2 'lBr' BLOCK 'rBr' SA_LOOP_3
+
+OPERATION ::= BINDINGS 
+             | CORRELATION 
+
+PARAMETERS ::= TYPE 'id' SA_CREATE_PARAMS 'coma' PARAMETERS 
+              | TYPE 'id' SA_CREATE_PARAMS
+              | empty
+
+
+PRINT_CELL ::= printCell 'id' SA_FIND_DF 'lSqBr' EXP SA_DF_PRINTCELL_1 'rSqBr' 'lSqBr' EXP SA_DF_PRINTCELL_2 'rSqBr' SA_DF_PRINTCELL_3 'semi_colon' 
+
+PRINT_COL ::= 'printCol' SA_DF_PRINTCOL_1 TABLE_HEADER 'semi_colon'
+             | 'printCol' SA_DF_PRINTCOL_1 ACCESS_COL 'semi_colon' 
+
+PRINT_DATA ::= 'print' SUPER_EXPRESSION SA_PRINT_DATA 'semi_colon' 
+
+PRINT_DF ::= 'printDf' 'id' SA_FIND_DF SA_DF_PRINT 'semi_colon' 
+
+PRINT_DF_DATA ::= 'printData' 'id' SA_FIND_DF SA_DF_PRINT_DATA 'semi_colon' 
+
+PRINT_HEADERS ::= 'printHeaders' 'id' SA_FIND_DF SA_DF_PRINTHEADERS_1 'semi_colon' 
+
+PRINT_ROW ::= 'printRow' SA_DF_PRINTROW_1 ACCESS_ROW 'semi_colon' 
+
+PRINT_TAGS ::= 'printTags' 'id' SA_FIND_DF SA_DF_PRINTTAGS_1 'semi_colon' 
+
+PRINT ::= PRINT_COL
+         | PRINT_TAGS
+         | PRINT_DATA
+         | PRINT_HEADERS
+         | PRINT_CELL
+         | PRINT_ROW
+         | PRINT_DF
+         | PRINT_DF_DATA
+
+PROGRAM ::= SA_PROGRAM_START INSTANTIATE PROGRAM_FUNCTIONS 'main' SA_MAIN_START 'colon' 'lBr' SA_VAR_COUNTERS INSTANTIATE BLOCK 'rBr' SA_END_PROGRAM
+
+PROGRAM_FUNCTIONS ::= FUNCTION PROGRAM_FUNCTIONS
+                     | empty
+
+STATEMENT ::= ASSIGNMENT
+             | CONDITION
+             | OPERATION
+             | PRINT
+             | LOOP
+             | CALLFUNC
+
+SUPER_EXPRESSION ::= EXPRESSION SA_EXP_6
+                    | EXPRESSION SA_EXP_6 'relop_and' SA_EXP_ADD_OP SUPER_EXPRESSION 
+                    | EXPRESSION SA_EXP_6 'relop_or' SA_EXP_ADD_OP SUPER_EXPRESSION
+
+TABLE_HEADER ::= 'id' SA_FIND_DF 'money_sign' 'id' SA_DF_HEADER
+
+TERM ::= FACTOR SA_EXP_9
+        | FACTOR SA_EXP_9 'times' SA_EXP_ADD_OP TERM 
+        | FACTOR SA_EXP_9 'divide' SA_EXP_ADD_OP TERM 
+
+TYPE ::= 'int' SA_TYPE
+        | 'float' SA_TYPE
+        | 'string' SA_TYPE
+        | 'bool' SA_TYPE
+
+VAR_ARR ::= 'id' SA_FIND_ID SA_ARR_15 SA_FAKE_BOTTOM VARS_ARR_ACC SA_ARR_18 SA_FAKE_BOTTOM_REMOVE
+
+VARS_ARR_ACC ::= 'lSqBr' EXP SA_ARR_16 'rSqBr' SA_ARR_17 VARS_ARR_ACC
+                | 'lSqBr' EXP SA_ARR_16 'rSqBr'
+
+VARS_ARR_INST ::= 'lSqBr' 'cte_int' SA_ARR_12 'rSqBr' SA_ARR_13 VARS_ARR_INST
+                 | 'lSqBr' 'cte_int' SA_ARR_12 'rSqBr'
+
+VAR_CTE ::= VAR_ARR
+           | 'id' SA_FIND_ID SA_EXP_1_ID
+           | 'cte_int' SA_CREATE_CONST SA_EXP_1_CTE
+           | 'cte_float' SA_CREATE_CONST SA_EXP_1_CTE
+           | 'cte_string' SA_CREATE_CONST SA_EXP_1_CTE
+           | 'true' SA_CREATE_CONST SA_EXP_1_CTE 
+           | 'false' SA_CREATE_CONST SA_EXP_1_CTE 
+           | CALLFUNC_EXP
+
+
+
+VARS ::= TYPE VARS_ID 'semi_colon' 
+
+VARS_ID ::= 'id' SA_CREATE_VAR 'coma' VARS_ID
+           | 'id' SA_CREATE_VAR 
+           | 'id' SA_CREATE_VAR SA_ARR_11 VARS_ARR_INST SA_ARR_14 'coma' VARS_ID
+           | 'id' SA_CREATE_VAR SA_ARR_11 VARS_ARR_INST SA_ARR_14
+
+
+
