@@ -667,7 +667,6 @@ def p_SA_END_PROGRAM(p):
   global functionDirectory
   # Create end quadruple
   newQuadruple(quadruples, getOpCode('End'), None, None, None)
-  print functionDirectory
   # Clear function dictionary
   functionDirectory.clear() 
 
