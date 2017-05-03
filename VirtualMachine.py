@@ -248,14 +248,14 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
         colTwo = columnsTwo[i]
         headOne = one['headers'][i]
         headTwo = two['headers'][i]
-        totalCorrelation += correlateData(colOne, headOne, colTwo, headTwo, threshold)
+        correlateData(colOne, headOne, colTwo, headTwo, threshold)
 
-      average = totalCorrelation/len(columnsOne)
+      # average = totalCorrelation/len(columnsOne)
 
-      if average > threshold:
-        print 'Data is correlated, value: ' + str(average)
-      else:
-        print 'Data is not correlated, value: ' + str(average)
+      # if average > threshold:
+      #   print 'Data is correlated, value: ' + str(average)
+      # else:
+      #   print 'Data is not correlated, value: ' + str(average)
 
     elif operator == 'CorrHeaders':
       one = memory.getDataframe(memory.getValue(leftOp))
@@ -275,14 +275,17 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       giver = memory.getValue(q['operand1'])
       # Get the row number
       row_num = memory.getValue(q['result'])
-      # Validate row size to see if it matches
-      sizeOne = memory.getRowSize(taker, 1)
+      # Validate column size to see if it matches
+      sizeOne = memory.getColSize(taker, 1)
+      sizeTwo = memory.getColSize(giver, 1)
+      # Access Row to append
       row = memory.accessRow(giver, row_num, 1)
-      if sizeOne == len(row):
+      # Check if size is the same
+      if sizeOne == sizeTwo:
         # BIND ROW
         memory.appendRow(taker, row, 1)
       else:
-        print 'Row size does not match'
+        print 'Column size does not match, cannot bind row'
         exit(1)  
 
     elif operator == 'ColBind':
@@ -296,14 +299,16 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       giver = memory.getValue(q['operand1'])
       # Get the col number
       col_num = memory.getValue(q['result'])
-      # Validate column size to see if it matches
-      sizeOne = memory.getColSize(taker, 1)
+      # Validate row size to see if it matches
+      sizeOne = memory.getRowSize(taker, 1)
+      sizeTwo = memory.getRowSize(giver, 1)
+      # Access column to append
       column = memory.accessCol(giver, col_num, 1)
-      if sizeOne == len(column):
+      if sizeOne == sizeTwo:
         # BIND COLUMN
         memory.appendColumn(taker, column, 1)
       else:
-        print 'Column size does not match'
+        print 'Row size does not match, cannot bind column'
         exit(1)        
 
 # =========================================================
@@ -334,6 +339,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Access row from memory
       column = memory.accessCol(title, col_num, scope)
       # Print
+      print 'Print Column ' + str(col_num) + ' from ' + title
       print column
 
     elif operator == 'PrintRow':
@@ -347,6 +353,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Access row from memory
       row = memory.accessRow(title, row_num, scope)
       # Print
+      print 'Print Row ' + str(row_num) + ' from ' + title
       print row
 
     elif operator == 'PrintDf':
@@ -356,7 +363,20 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Access whole df
       df = memory.accessDf(title, scope)
       # PRINT
-      print df
+      print 'Printing dataframe'
+      # Better printing
+      print 'Title: ' + title
+      print 'Headers: ', df['headers']
+      print 'Tags: ',
+      for key in df['tags']:
+        print key,
+      print ''
+      print 'Data:'
+      for i in df['data']:
+        for j in i:
+          print j, '\t',
+        print ''
+      print ''
 
     elif operator == 'PrintCell':
       # Go to access data frame quad
@@ -372,6 +392,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Access whole df
       cell = memory.accessCell(title, scope, row, col)
       # PRINT
+      print 'Print Cell [' + str(row) + ', ' + str(col) + '] from ' + title
       print cell    
 
     elif operator == 'PrintDfData':
@@ -382,7 +403,12 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Access whole df
       data = memory.accessData(title, scope)
       # PRINT
-      print data
+      print 'Print Data from ' + title
+      for i in data:
+        for j in i:
+          print j, '\t',
+        print ''
+      print ''
 
     elif operator == 'PrintHeaders':
       # Get access values
@@ -391,6 +417,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Access whole df
       headers = memory.accessHeaders(title, scope)
       # PRINT
+      print 'Headers from ' + title
       print headers
 
     elif operator == 'PrintTags':
@@ -400,6 +427,7 @@ def execute (quadruples, globalVarCount, localVarCount, tempVarCount, constVarCo
       # Access whole df
       tags = memory.accessTags(title, scope)
       # PRINT
+      print 'Tags from ' + title
       print tags
 
 # =========================================================

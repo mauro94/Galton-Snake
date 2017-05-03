@@ -1,6 +1,6 @@
 main: {
 	dataframe(d1, ["1","2","3"], file.csv);
-	dataframe(d2, ["1","2","3"], file.csv);
+	dataframe(d2, ["1","2","3"], file2.csv);
 	dataframe(d3, ["1","2","3"], file.csv);
 
 	printCell d1[2][3];
@@ -8,7 +8,9 @@ main: {
 	printRow d1.row(2);
 	printHeaders d1;
 	printTags d1;
+  printDf d1;
+  printData d2;
 
-	correlate(d1, d1, 0.9);
-
+	correlate(d1, d2, 0.9);
+  correlate(d2, d2, 0.9);
 }

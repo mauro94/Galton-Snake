@@ -4,7 +4,7 @@
 
 # -------------------------- INCLUDES ----------------------------------
 from Correlation import *
-from numbers import Number
+import math
 
 # -------------------------- STACK OPERATIONS --------------------------
 def stackTop(stack):
@@ -174,38 +174,47 @@ def correlateData(columnOne, headerOne, columnTwo, headerTwo, threshold):
     exit(1)
 
   if columnOne == columnTwo:
-    correlationPrint(headerOne, headerTwo, 1)
+    correlationPrint(headerOne, headerTwo, 1, 0)
     return 1
-  elif isinstance(columnOne[0], numbers.Number) or isinstance(columnTwo[0], numbers.Number):
-    # Get averages
-    meanOne = float(sum(columnOne))/len(columnOne)
-    meanTwo = float(sum(columnTwo))/len(columnTwo)
-    # Substract averages
-    subsOne = list(map(lambda x: x - meanOne, columnOne))
-    subsTwo = list(map(lambda x: x - meanTwo, columnTwo))
-    # Calculate subsOne * subsTwo
-    multiply = list(map(lambda x,y: x * y, subsOne, subsTwo))
-    # Calculate subsOne squared
-    squareOne = list(map(lambda x: x**2, subsOne))
-    # Calcuate subsTwo squared
-    squareTwo = list(map(lambda x: x**2, subsTwo))
-    # Calculate correlation
-    temp = sqrt(float(squareOne) * squareTwo)
+
+  columnOne = list(map(lambda x: float(x), columnOne))
+  columnTwo = list(map(lambda x: float(x), columnTwo))
+  # Get averages
+  meanOne = float(sum(columnOne))/len(columnOne)
+  meanTwo = float(sum(columnTwo))/len(columnTwo)
+  # Substract averages
+  subsOne = list(map(lambda x: x - meanOne, columnOne))
+  subsTwo = list(map(lambda x: x - meanTwo, columnTwo))
+  # Calculate subsOne * subsTwo
+  multiply = list(map(lambda x,y: x * y, subsOne, subsTwo))
+  # Calculate subsOne squared
+  squareOne = list(map(lambda x: x**2, subsOne))
+  # Calcuate subsTwo squared
+  squareTwo = list(map(lambda x: x**2, subsTwo))
+  # Sum values
+  multiply = sum(multiply)
+  squareOne = sum(squareOne)
+  squareTwo = sum(squareTwo)
+  # Calculate correlation
+  temp = math.sqrt(float(squareOne) * squareTwo)
+  if not temp == 0:
     corr = float(multiply)/temp
-    # Nice print
-    correlationPrint(headerOne, headerTwo, corr)
-    return corr
   else:
-    print 'Columns must be numeric, skipping correlation of: ' + headerOne + ', ' + headerTwo
+    corr = 0
+  # Nice print
+  correlationPrint(headerOne, headerTwo, corr, threshold)
 
 # =========================================================
 # SPECIAL PRINTS
 # =========================================================
 
-def correlationPrint(headOne, headTwo, corr):
+def correlationPrint(headOne, headTwo, corr, threshold):
   if corr == 1:
     print 'Perfect positive correlation between ' + headOne + ', ' + headTwo
   elif corr == -1:
     print 'Perfect negative correlation between ' + headOne + ', ' + headTwo
   else:
-    print 'Correlation value = ' + str(corr) + ' between ' + headOne + ', ' + headTwo
+    if corr < (-1*threshold) or corr > threshold:
+      print 'Correlation Success value = ' + str(corr) + ' between ' + headOne + ', ' + headTwo
+    else:
+      print 'Correlation Failure value = ' + str(corr) + ' between ' + headOne + ', ' + headTwo

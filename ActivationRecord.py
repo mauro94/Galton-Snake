@@ -129,7 +129,7 @@ class ActivationRecord:
   # =======================================================
 
   def getColSize(self, title):
-    return len(column(self.local_dataframes[title]['data'], 1))
+    return len(column(self.local_dataframes[title]['data'], 0))
 
   def getRowSize(self, title):
     return len(self.local_dataframes[title]['data'][0])
