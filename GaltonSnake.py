@@ -299,7 +299,7 @@ def p_CONDITION_ELIF(p):
                       | lPar SUPER_EXPRESSION rPar SA_COND_1 lBr BLOCK rBr'''
 
 def p_CORR_HEADERS(p):
-    '''CORR_HEADERS : correlateHeaders lPar SA_DF_CORR_HEADERS_1 TABLE_HEADER coma TABLE_HEADER coma cte_float SA_DF_CORR_HEADERS_2 rPar semi_colon '''
+    '''CORR_HEADERS : correlateHeaders lPar id SA_FIND_DF coma id SA_FIND_DF coma cte_float SA_DF_CORR_HEADERS_1 rPar semi_colon '''
 
 def p_CORR(p):
     '''CORR : correlate lPar id SA_FIND_DF coma id SA_FIND_DF coma cte_float SA_DF_CORR rPar semi_colon '''
@@ -2093,33 +2093,41 @@ def p_SA_DF_CORR_HEADERS_1(p):
   '''SA_DF_CORR_HEADERS_1 : empty'''
   # Globals
   global cont
+  # Get df id 1
+  current_df1 = p[-7]
+  # Get df id 2
+  current_df2 = p[-4]
+  # Get value
+  value = p[-1]
   # Verify scope
   if dataframeTable['global'].has_key(current_df):
     scope = 1
   else:
     scope = 2
-  # Create quadruple
-  newQuadruple(quadruples, getOpCode('CorrHeaders'), None, scope, None)
-  # Update quadruple counter
-  cont += 1
-
-
-# Correlation headers declaration finished
-# Create quadruple
-def p_SA_DF_CORR_HEADERS_2(p):
-  '''SA_DF_CORR_HEADERS_2 : empty'''
-  # Globals
-  global cont
-  # Get constant value
-  value = p[-1]
-  # Verify if value is in constants tabl
+  # New special dataframe
+  special_df1 = '[' + str(current_df1) + ']'
+  # New special dataframe
+  special_df2 = '[' + str(current_df2) + ']'
+  # Verify if string is in constants tabl
+  if not constantTable.has_key(str(special_df1)): 
+    # Create constant
+    constantTable[str(special_df1)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df1}
+    # Increase constant variable counter
+    constVarCount['string'] += 1
+    # Verify if string is in constants tabl
+  if not constantTable.has_key(str(special_df2)): 
+    # Create constant
+    constantTable[str(special_df2)] = {'type': getTypeCode('string'), 'address': constVarCount['string'], 'val': special_df2}
+    # Increase constant variable counter
+    constVarCount['string'] += 1
+    # Verify if string is in constants tabl
   if not constantTable.has_key(str(value)): 
     # Create constant
     constantTable[str(value)] = {'type': getTypeCode('float'), 'address': constVarCount['float'], 'val': value}
     # Increase constant variable counter
     constVarCount['float'] += 1
   # Create quadruple
-  newQuadruple(quadruples, getOpCode('CorrHeadersFactor'), None, None, constantTable[value]['address'])
+  newQuadruple(quadruples, getOpCode('CorrHeaders'), constantTable[str(special_df1)]['address'], constantTable[str(special_df2)]['address'], constantTable[str(value)]['address'] )
   # Update quadruple counter
   cont += 1
 
