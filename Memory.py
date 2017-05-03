@@ -150,24 +150,36 @@ class Memory:
   # CREATION
   # =======================================================
 
-  def createDataframe(self, dataframe, title):
-    self.global_dataframes[title] = dataframe
+  def createDataframe(self, dataframe, scope, title):
+    if scope == 1:
+      self.global_dataframes[title] = dataframe
+    else:
+      activationRecord = stackTop(self.memory_stack)
+      activationRecord.createDataframe(dataframe, title)
 
   # =======================================================
   # ACCESS
   # =======================================================
 
   def accessRow (self, title, row, scope):
-    if scope == 1:
-      return self.global_dataframes[title]['data'][row]
-    else:
+    try:
+      if scope == 1:
+        return self.global_dataframes[title]['data'][row]
+      else:
+        activationRecord = stackTop(self.memory_stack)
+        return activationRecord.accessRow(title, row)
+    except KeyError:
       activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessRow(title, row)
 
   def accessCol (self, title, col, scope):
-    if scope == 1:
-      return column(self.global_dataframes[title]['data'], col)
-    else:
+    try:
+      if scope == 1:
+        return column(self.global_dataframes[title]['data'], col)
+      else:
+        activationRecord = stackTop(self.memory_stack)
+        return activationRecord.accessCol(title, col)
+    except KeyError:
       activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessCol(title, col)
 
@@ -209,33 +221,41 @@ class Memory:
       activationRecord = stackTop(self.memory_stack)
       return activationRecord.accessHeaders(title)
 
+  def getDataframe (self, title):
+    try:
+      return self.global_dataframes[title]
+    # If not global return from local memory
+    except KeyError:
+      return stackTop(self.memory_stack).getDataframe(title)
+
   # =======================================================
-  # DYNAMIC BIZZ
+  # DYNAMIC MEMORY METHODS
   # =======================================================
 
   def getColSize(self, title, scope):
-    if scope == 1:
-      return len(column(self.global_dataframes[title]['data'], 1))
-    else:
+    try:
+      return len(column(self.global_dataframes[title]['data'], 0))
+    except KeyError:
       return activationRecord.getColSize(title)
 
   def getRowSize(self, title, scope):
-    if scope == 1:
+    try:
       return len(self.global_dataframes[title]['data'][0])
-    else:
+    except KeyError:
       return activationRecord.getRowSize(title)
 
   def appendColumn(self, title, column, scope):
-    i = 0
-    if scope == 1:
-      for c in self.global_dataframes[title]['data']:
-        c.append(column[i])
-        i += 1
-    else:
+    try:
+      i = 0
+      if scope == 1:
+        for c in self.global_dataframes[title]['data']:
+          c.append(column[i])
+          i += 1
+    except KeyError:
       activationRecord.appendColumn(title, column)
 
   def appendRow(self, title, row, scope):
-    if scope == 1:
+    try:
       self.global_dataframes[title]['data'].append(row)
-    else:
+    except KeyError:
       activationRecord.appendRow(title, row)
